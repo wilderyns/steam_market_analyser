@@ -1,3 +1,9 @@
+
+
+
+Initially I tried to handle the application presentation without any external libaries to make things look good in a terminal, however quickly realised that without a library like Rich, big data became unreadable in a terminal as shown 
+
+
 run.py
 Just acts as a simple runner so the user can neatly run the application with python3 run.py
 
@@ -18,7 +24,7 @@ helpers.py
 Miscallenous functions such as atempting to clear the terminal window, resizing the terminal, etc
 
 models.py
-Houses overarching data structures such as app state and dataset expected structure, as well as storing applied filters
+Houses overarching data structures such as app state as well as filters
 
 user_input.py
 Functions to handle user input constraints and sanitisation
