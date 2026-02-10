@@ -7,8 +7,8 @@ from app.models.dataset_nolib import DatasetNoLib
 from app.models.dataset_pandas import DatasetPandas
 
 
-def init_dataset(state: AppState):
-    if not check_data_on_disk():
+def init_dataset(state: AppState, console=None):
+    if not check_data_on_disk(state.dataset_path):
         # Dataset not available at specified path
         pass
     

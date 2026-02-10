@@ -9,7 +9,7 @@ from app.models.filters import Filters
 class AppState:
     dataset_path: Path
     dataset_url: str = "https://www.kaggle.com/api/v1/datasets/download/fronkongames/steam-games-dataset"
-    dataframe: Optional[Dataset] = None
+    dataset: Optional[Dataset] = None
     filters: Filters = Filters()
     last_results: Optional[Dataset] = None
     features: Features = Features()

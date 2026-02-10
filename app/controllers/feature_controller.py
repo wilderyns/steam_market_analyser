@@ -3,7 +3,7 @@ from app.models.appstate import AppState
 from app.services.feature_service import detect_features
 
 
-def startup_controller(state: AppState):
+def feature_controller(state: AppState):
     print("Getting everything ready...")
     state.features = detect_features()
     render_feature_check(state.features)

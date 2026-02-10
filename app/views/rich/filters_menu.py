@@ -3,7 +3,7 @@ from rich.panel import Panel
 from app.models.appstate import AppState
 
 
-def render_filters_menu_rich(console: Console, state: AppState) -> None:
+def render_filters_menu_rich(state: AppState, console: Console) -> None:
     f = state.filters
     console.clear()
 
