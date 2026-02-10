@@ -2,74 +2,63 @@
 from typing import Optional
 
 def expect_user_input(t: type[str | int | float | bool], choices: Optional[list[str | int | float | bool]] = None, min_val: Optional[int | float] = None, max_val: Optional[int | float] = None, console=None, prompt: str = "Select an option: "):
-    # If usign Rich life becomes easy because it has inbuilt validation
-        
-    if console is not None:
-        try:
-            if t == str:
-                from rich.prompt import Prompt
-                if choices is not None:
-                    return Prompt.ask(prompt, choices)
-                else:
-                    return Prompt.ask(prompt)
-                
-            elif t == int:
-                from rich.prompt import IntPrompt
-                if choices is not None:
-                    val = IntPrompt.ask(prompt, choices)
-                else:
-                    val = IntPrompt.ask(prompt)
-                
-                if val <= min_val or val >= max_val:
-                    return ValueError("Value not in range")
-                else:
-                    return val
-                
-            elif t == int:
-                from rich.prompt import FloatPrompt
-                if choices is not None:
-                    val = FloatPrompt.ask(prompt, choices)
-                else:
-                    val = FloatPrompt.ask(prompt)
-                if val <= min_val or val >= max_val:
-                    return ValueError("Value not in range")
-                else:
-                    return val
-                
-            elif t == bool:
-                from rich.prompt import Confirm
-                return Confirm.ask(prompt)
-        except Exception:
-            pass
-        
-    # If not using Rich gotta handle that validation ourselves and loop to wait for input
+    had_error = False
+
+    def clear_last_error():
+        if console is not None and had_error:
+            console.file.write("\033[1A\033[2K")
+            console.file.flush()
+
+    def show_error(msg: str):
+        if console is not None:
+            console.print(f"[red]{msg}[/red]")
+        else:
+            print(msg)
+
+    def parse_bool(raw: str) -> bool:
+        value = raw.strip().lower()
+        if value in ("y", "yes", "true", "1"):
+            return True
+        if value in ("n", "no", "false", "0"):
+            return False
+        raise ValueError
+
     while True:
-        raw = input(prompt).strip()
-        
+        clear_last_error()
+        raw = console.input(prompt).strip() if console is not None else input(prompt).strip()
+
         try:
             if t == str:
-                if choices is not None and raw not in choices:
-                    err = "Input is not one of the available options."
-                    if console is not None: 
-                        console.print(f"[red]{err}[/red]")
-                    else:
-                        print(err)
-                else:
-                    return str(raw)
-            
+                val = raw
             elif t == int:
-                #TODO: Handle ints properly including min and max
-                return int(raw)
-            
+                try:
+                    val = int(raw)
+                except ValueError:
+                    raise ValueError("Invalid input, please enter a valid int.")
             elif t == float:
-                return float(raw)
-            
+                try:
+                    val = float(raw)
+                except ValueError:
+                    raise ValueError("Invalid input, please enter a valid float.")
             elif t == bool:
-                return bool(raw)
-                 
-        except ValueError:
-            err = "Invalid input, please enter a {t}"
-            if console is not None:
-                console.print(f"[red]{err}[/red]")
+                try:
+                    val = parse_bool(raw)
+                except ValueError:
+                    raise ValueError("Invalid input, please enter yes/no.")
             else:
-                print(err)
+                raise ValueError
+
+            if choices is not None and val not in choices:
+                raise ValueError(f"Input must be one of: {', '.join(str(c) for c in choices)}")
+            if min_val is not None and val < min_val:
+                raise ValueError(f"Input must be >= {min_val}")
+            if max_val is not None and val > max_val:
+                raise ValueError(f"Input must be <= {max_val}")
+
+            return val
+        except ValueError as e:
+            had_error = True
+            msg = str(e)
+            if not msg:
+                msg = f"Invalid input, please enter a valid {t.__name__}."
+            show_error(msg)

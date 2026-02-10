@@ -1,7 +1,4 @@
 from rich.panel import Panel
-from rich.table import Table
-from rich import box
-import pandas
 
 from app.services.dataset_service import attempt_data_download, init_dataset 
 from app.models.appstate import AppState
@@ -29,8 +26,8 @@ def dataset_controller(state, console=None):
         if state.dataset is not None:
             console.print(Panel.fit(
                 f"[green]Dataset loaded.[/green]\n"
-                f"Records: [bold]{len(state.dataset)}[/bold]\n"
-                f"Columns: [bold]{len(state.dataset.columns)}[/bold]",
+                f"Records: [bold]{state.dataset.row_count()}[/bold]\n"
+                f"Columns: [bold]{len(state.dataset.columns())}[/bold]",
                 border_style="green"
             ))
             console.input("\nPress Enter to continue...")
@@ -76,7 +73,7 @@ def dataset_controller(state, console=None):
         # Load again after fetch
         with console.status("[bold]Loading downloaded dataset...[/bold]"):
             try:
-                state.dataframe = init_dataset(state)
+                init_dataset(state)
             except Exception as e:
                 console.print(Panel.fit(
                     f"[red]Downloaded dataset but failed to load CSV:[/red]\n{e}",
@@ -87,8 +84,8 @@ def dataset_controller(state, console=None):
 
         console.print(Panel.fit(
             f"[green]Dataset downloaded and loaded. Ready![/green]\n"
-            f"Records: [bold]{len(state.dataframe)}[/bold]\n"
-            f"Columns: [bold]{len(state.dataframe.columns)}[/bold]",
+            f"Records: [bold]{state.dataset.row_count() if state.dataset is not None else 0}[/bold]\n"
+            f"Columns: [bold]{len(state.dataset.columns()) if state.dataset is not None else 0}[/bold]",
             border_style="green"
         ))
         console.input("\nPress Enter to continue...")

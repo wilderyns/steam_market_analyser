@@ -10,7 +10,7 @@ def filters_controller(state: AppState, console=None):
     render_filters_menu_rich(state, console)
     
     while True:        
-        choice = expect_user_input(int, [99, 1, 2, 3, 4, 5], None, None, console)
+        choice = expect_user_input(int, [0, 99, 1, 2, 3, 4, 5], None, None, console)
     
         if choice == 0:
             return
@@ -30,6 +30,6 @@ def filters_controller(state: AppState, console=None):
         elif choice == 5:
             f.min_reviews = expect_user_input(int, None, 0, None, console, "Minimum reviews: ")
         elif choice == 99:
-            state.filters = state.reset_filters
-        else:
-            print("Invalid choice.")
+            state.reset_filters()
+
+        render_filters_menu_rich(state, console)

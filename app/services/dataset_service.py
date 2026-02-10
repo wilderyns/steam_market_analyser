@@ -2,6 +2,7 @@ import io
 import os
 from pathlib import Path
 import zipfile
+import csv
 from app.models.appstate import AppState
 from app.models.dataset_nolib import DatasetNoLib
 from app.models.dataset_pandas import DatasetPandas
@@ -9,8 +10,9 @@ from app.models.dataset_pandas import DatasetPandas
 
 def init_dataset(state: AppState, console=None):
     if not check_data_on_disk(state.dataset_path):
-        # Dataset not available at specified path
-        pass
+        state.dataset = None
+        state.last_results = None
+        return False
     
     if state.features.has_pandas:
         try:
@@ -22,8 +24,14 @@ def init_dataset(state: AppState, console=None):
             state.last_results = None
             return False
     else:
-        #TODO: Eventually handle what to do if Pandas isn't available
-        return False
+        try:
+            state.dataset = load_nolib(state.dataset_path)
+            state.last_results = state.dataset
+            return True
+        except Exception:
+            state.dataset = None
+            state.last_results = None
+            return False
     
 def load_pandas(path: Path) -> DatasetPandas:
     import pandas
@@ -31,12 +39,19 @@ def load_pandas(path: Path) -> DatasetPandas:
     return DatasetPandas(dataframe)
 
 def load_nolib(path: Path) -> DatasetNoLib:
-    return
+    with path.open("r", newline="", encoding="utf-8") as f:
+        reader = csv.reader(f)
+        rows = list(reader)
+    if not rows:
+        raise ValueError("Dataset CSV is empty.")
+    columns = rows[0]
+    data_rows = rows[1:]
+    return DatasetNoLib(columns, data_rows)
 
 def check_data_on_disk(path: Path):
-    return True
+    return path.exists() and path.is_file()
 
-def attempt_data_download(state: AppState, dataset_url):
+def attempt_data_download(state: AppState, dest_path=None):
     if not state.features.has_requests:
         raise RuntimeError("Requests library not installed; cannot fetch dataset automatically.")
 
@@ -45,11 +60,11 @@ def attempt_data_download(state: AppState, dataset_url):
     
     import requests 
 
-    dest = state.dataset_path
+    dest = dest_path if dest_path is not None else state.dataset_path
 
     dest.parent.mkdir(parents=True, exist_ok=True)
 
-    resp = requests.get(dataset_url, timeout=60)
+    resp = requests.get(state.dataset_url, timeout=60)
 
     if resp.status_code in (401, 403):
         raise PermissionError(
