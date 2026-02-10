@@ -2,17 +2,29 @@ from rich.console import Console
 from app.controllers.filters_controller import filters_controller
 from app.models.appstate import AppState
 from app.views.rich.main_menu import render_main_menu_rich
-from app.utils.user_input_handler import expect_user_input
 
 def main_menu_controller(state: AppState, console=None):
     if console is None or not hasattr(console, "size"):
         raise RuntimeError("Console from Rich not defined")
-            
+
+    error = None
+
     while True:
-        render_main_menu_rich(state, console)
-        
-        choice = expect_user_input(int, [99, 1, 2, 3, 4], None, None, console)
-        
+        render_main_menu_rich(state, console, error)
+        raw = console.input("Select an option: ").strip()
+
+        try:
+            choice = int(raw)
+        except ValueError:
+            error = f"{raw if raw else 'That input'} is an invalid option"
+            continue
+
+        if choice not in [99, 1, 2]:
+            error = f"{choice} is an invalid option"
+            continue
+
+        error = None
+
         if choice == 99:
             console.print("Goodbye!")
             break
@@ -20,11 +32,5 @@ def main_menu_controller(state: AppState, console=None):
              console.print ("View dataset")
         elif choice == 2:
             filters_controller(state, console)
-        elif choice == 3:
-            print("TODO: Run analysis")
-        elif choice == 4:
-            print("TODO: Export last results")
-        else:
-            print("Invalid choice. Please try again.")   
     
     return True
