@@ -1,3 +1,4 @@
+import string
 from rich import box
 from rich.console import Console
 from rich.table import Table
@@ -51,10 +52,12 @@ def render_dataset_viewer_rich(state: AppState, console: Console, n: int = 20, p
     
     # Special column formatting handling, overflows and the like
     # TODO: Handle all columns that might overflow
-    # FIXME: Displaying about game column crashes the app ?due to unescaped tags crashing Rich
+        
     for c in cols:
         if c == "Tags":
             table.add_column(c, overflow="ellipsis", no_wrap=True)
+        if c == "About the game":
+            table.add_column(c, overflow="ellipsis")
         else:
             table.add_column(c, overflow="fold")
 
@@ -72,9 +75,15 @@ def render_dataset_viewer_rich(state: AppState, console: Console, n: int = 20, p
             # Set the cell value to an empty string if the value is missing or out of bounds, otherwise use th value
             val = "" if index is None or index >= len(row) else row[index]
             
+            # Special rules for cells
             # compact the tags so the table doesn't have 10 lines of tags per rows
             if c == "Tags":
                 out.append(compact_tags(val))
+            # Remove all [ ] \ characters because these break Rich
+            if c == "About the game":
+                val = val.replace("[", "").replace("]", "").replace("\'", "")
+                val = val[:50] + "..." if len(val) > n else val
+                out.append(val)
             else:
                 out.append("" if val is None else str(val))
                 
