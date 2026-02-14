@@ -11,13 +11,8 @@ def detect_size() -> int | int:
     return int(cols), int(rows)
 
 def check_terminal_size(min_width: int, min_height: int, console=None) -> bool:
-    def too_small() -> bool:
-        if console is not None and hasattr(console, "size"):
-            s = console.size
-            return s.width < min_width or s.height < min_height
-        
-    if not too_small():
-        return 1
-    else:
-        return 0
+    if console is None or not hasattr(console, "size"):
+        return False
 
+    s = console.size
+    return s.width >= min_width and s.height >= min_height
