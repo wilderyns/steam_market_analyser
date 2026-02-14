@@ -43,12 +43,14 @@ def init_dataset(state: AppState, console=None):
         try:
             state.dataset = load_pandas(state.dataset_path)
             state.last_results = state.dataset
+            state.columns.load_columns(state.dataset.columns())
             return True
         except Exception as e:
             print(f"Pandas load failed: {e}")
 
     try:
         state.dataset = load_nolib(state.dataset_path)
+        state.columns.load_columns(state.dataset.columns())
         state.last_results = state.dataset
         return True
     except Exception as e:
@@ -115,3 +117,7 @@ def attempt_data_download(state: AppState, dest_path=None):
         dest.unlink()
         
     os.rename(str(extracted_csv), str(dest))
+
+# Populate our available columns of the selected columns model in state
+def populate_columns(state: AppState, headers: list[str]):
+    state.columns.available_columns = headers

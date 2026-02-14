@@ -17,8 +17,6 @@ def dataset_controller(state, console=None):
         with console.status("[bold]Loading dataset...[/bold]"):
             try:
                 init_dataset(state)
-            except FileNotFoundError:
-                df = None
             except Exception as e:
                 console.print(Panel.fit(
                     f"[red]Error loading dataset:[/red]\n{e}",
@@ -101,19 +99,32 @@ def apply_search(dataset, search_term: str):
     if not search_term:
         return dataset
 
-    needle = search_term.lower()
+    search_term = search_term.lower()
 
+    # If our dataset is using Pandas
     if isinstance(dataset, DatasetPandas):
         dataframe = dataset.df
+        
+        # Very cool casting of our entire dataset as strings 
         text = dataframe.astype(str)
-        matches = text.apply(lambda col: col.str.contains(needle, case=False, na=False)).any(axis=1)
+        
+        # Again more cool pandas stuff, allowing you to apply a function to an entire dataset
+        # And then pythons anonymous functions make for some very neat coding 
+        matches = text.apply(lambda col: col.str.contains(search_term, case=False, na=False)).any(axis=1)
         return DatasetPandas(dataframe[matches])
 
+    # As contrasted to our nolib dataset where we do a loop through the rows
+    # TODO: Might be fun to do a time comparison here 
     if isinstance(dataset, DatasetNoLib):
+        needle = search_term
         rows = []
+        append_row = rows.append
+        to_str = str
         for row in dataset.rows:
-            if any(needle in str(cell).lower() for cell in row):
-                rows.append(row)
+            for cell in row:
+                if needle in to_str(cell).lower():
+                    append_row(row)
+                    break
         return DatasetNoLib(dataset.columns(), rows)
 
     return dataset

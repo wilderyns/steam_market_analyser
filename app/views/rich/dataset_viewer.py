@@ -30,12 +30,12 @@ def render_dataset_viewer_rich(state: AppState, console: Console, n: int = 20, p
         return table
 
     # TODO: User defines what columns they want to see
-    cols = ["Name", "Release date", "Price", "Genres", "Tags", "Windows", "Mac", "Linux", "Positive", "Negative"]
-    available_cols = dataset.columns()
+    cols = state.columns.resolve()
+    available_cols = state.columns.available_columns
     cols = [c for c in cols if c in available_cols]
     if not cols:
-        # If no preferred columns are set just show the first 10 columns
-        cols = available_cols[:10]
+        # If no preferred columns are set just show the first 7 columns
+        cols = available_cols[:7]
 
     # Begin creating the table
     total_rows = dataset.row_count()
