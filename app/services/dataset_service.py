@@ -52,7 +52,7 @@ def init_dataset(state: AppState, console=None):
         state.last_results = state.dataset
         return True
     except Exception as e:
-        print(f"No-lib load failed: {e}")
+        print(f"Nolib load failed: {e}")
         state.dataset = None
         state.last_results = None
         return False
