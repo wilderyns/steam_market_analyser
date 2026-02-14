@@ -10,7 +10,7 @@ def filters_controller(state: AppState, console=None):
     render_filters_menu_rich(state, console)
     
     while True:        
-        choice = expect_user_input(int, [0, 99, 1, 2, 3, 4, 5], None, None, console)
+        choice = expect_user_input(int, [0, 99, 1, 2, 3, 4, 5, 6], None, None, console)
     
         if choice == 0:
             return
@@ -29,6 +29,8 @@ def filters_controller(state: AppState, console=None):
             f.min_review_score = expect_user_input(float, None, 0.0, 10.0, console, "Minimum review score: ")
         elif choice == 5:
             f.min_reviews = expect_user_input(int, None, 0, None, console, "Minimum reviews: ")
+        elif choice == 6:
+            f.adult_content = expect_user_input(bool, None, None, None, console, "Display adult games? ")
         elif choice == 99:
             state.reset_filters()
 

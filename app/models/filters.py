@@ -9,3 +9,4 @@ class Filters:
     genre_contains: Optional[str] = None
     min_review_score: Optional[float] = None  
     min_reviews: Optional[int] = None
+    adult_content: Optional[bool] = False

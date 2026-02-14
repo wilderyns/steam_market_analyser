@@ -3,7 +3,8 @@ from typing import Optional
 
 def expect_user_input(t: type[str | int | float | bool], choices: Optional[list[str | int | float | bool]] = None, min_val: Optional[int | float] = None, max_val: Optional[int | float] = None, console=None, prompt: str = "Select an option: "):
     had_error = False
-
+    error_count = 0
+    
     def clear_last_error():
         if console is not None and had_error:
             console.file.write("\033[1A\033[2K")
@@ -24,7 +25,9 @@ def expect_user_input(t: type[str | int | float | bool], choices: Optional[list[
         raise ValueError
 
     while True:
-        clear_last_error()
+        if error_count > 1:
+            clear_last_error()
+            
         raw = console.input(prompt).strip() if console is not None else input(prompt).strip()
 
         try:
@@ -42,9 +45,10 @@ def expect_user_input(t: type[str | int | float | bool], choices: Optional[list[
                     raise ValueError("Invalid input, please enter a valid float.")
             elif t == bool:
                 try:
+                    val = bool(raw)
                     val = parse_bool(raw)
                 except ValueError:
-                    raise ValueError("Invalid input, please enter yes/no.")
+                    raise ValueError("Invalid input, please enter yes/no, y/n, 1/0.")
             else:
                 raise ValueError
 
@@ -58,6 +62,7 @@ def expect_user_input(t: type[str | int | float | bool], choices: Optional[list[
             return val
         except ValueError as e:
             had_error = True
+            error_count += 1
             msg = str(e)
             if not msg:
                 msg = f"Invalid input, please enter a valid {t.__name__}."
