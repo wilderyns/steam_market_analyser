@@ -3,11 +3,12 @@ from typing import Optional
 
 def expect_user_input(t: type[str | int | float | bool], choices: Optional[list[str | int | float | bool]] = None, min_val: Optional[int | float] = None, max_val: Optional[int | float] = None, console=None, prompt: str = "Select an option: "):
     had_error = False
-    error_count = 0
+    last_error: Optional[str] = None
+    rendered_error = False
     
-    def clear_last_error():
-        if console is not None and had_error:
-            console.file.write("\033[1A\033[2K")
+    def clear_lines(count: int):
+        if console is not None and count > 0:
+            console.file.write("\033[1A\033[2K" * count)
             console.file.flush()
 
     def show_error(msg: str):
@@ -25,8 +26,13 @@ def expect_user_input(t: type[str | int | float | bool], choices: Optional[list[
         raise ValueError
 
     while True:
-        if error_count > 1:
-            clear_last_error()
+        if had_error:
+            if console is not None:
+                # keeping the console clean by only showing one error
+                clear_lines(2 if rendered_error else 1)
+            if last_error is not None:
+                show_error(last_error)
+                rendered_error = True
             
         raw = console.input(prompt).strip() if console is not None else input(prompt).strip()
 
@@ -62,8 +68,9 @@ def expect_user_input(t: type[str | int | float | bool], choices: Optional[list[
             return val
         except ValueError as e:
             had_error = True
-            error_count += 1
             msg = str(e)
             if not msg:
                 msg = f"Invalid input, please enter a valid {t.__name__}."
-            show_error(msg)
+            last_error = msg
+            if console is None:
+                show_error(msg)
