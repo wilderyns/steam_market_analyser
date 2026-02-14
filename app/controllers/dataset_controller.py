@@ -2,6 +2,10 @@ from rich.panel import Panel
 
 from app.services.dataset_service import attempt_data_download, init_dataset 
 from app.models.appstate import AppState
+from app.models.dataset_nolib import DatasetNoLib
+from app.models.dataset_pandas import DatasetPandas
+from app.utils.terminal import clear_terminal
+from app.views.rich.dataset_viewer import render_dataset_viewer_rich
 
 # Doing the view view logic here, should be broken into its own view 
 
@@ -91,3 +95,79 @@ def dataset_controller(state, console=None):
         console.input("\nPress Enter to continue...")
 
         return True
+
+
+def apply_search(dataset, search_term: str):
+    if not search_term:
+        return dataset
+
+    needle = search_term.lower()
+
+    if isinstance(dataset, DatasetPandas):
+        dataframe = dataset.df
+        text = dataframe.astype(str)
+        matches = text.apply(lambda col: col.str.contains(needle, case=False, na=False)).any(axis=1)
+        return DatasetPandas(dataframe[matches])
+
+    if isinstance(dataset, DatasetNoLib):
+        rows = []
+        for row in dataset.rows:
+            if any(needle in str(cell).lower() for cell in row):
+                rows.append(row)
+        return DatasetNoLib(dataset.columns(), rows)
+
+    return dataset
+
+
+def view_dataset_controller(state: AppState, console, page_size: int = 20):
+    if state.dataset is None:
+        console.print("[red]Dataset not loaded.[/red]")
+        console.input("Press Enter to return...")
+        return
+
+    search_term = ""
+    state.page = 1
+    error = None
+
+    while True:
+        clear_terminal(console)
+        filtered = state.dataset.filter(state.filters)
+        searched = apply_search(filtered, search_term)
+        state.last_results = searched
+
+        total_rows = searched.row_count()
+        total_pages = max(1, (total_rows + page_size - 1) // page_size)
+        if state.page > total_pages:
+            state.page = total_pages
+        if state.page < 1:
+            state.page = 1
+
+        table = render_dataset_viewer_rich(state, console, n=page_size, p=state.page, search_term=search_term)
+        console.print(table)
+        console.print("[bold]Commands:[/bold] n=next, p=prev, s=search, c=clear search, q=back")
+        if error:
+            console.print(f"[red]{error}[/red]")
+
+        cmd = console.input("Select an option: ").strip()
+        error = None
+
+        if cmd == "q":
+            return
+        elif cmd == "n":
+            if state.page < total_pages:
+                state.page += 1
+            else:
+                error = "Already on last page"
+        elif cmd == "p":
+            if state.page > 1:
+                state.page -= 1
+            else:
+                error = "Already on first page"
+        elif cmd == "s":
+            search_term = console.input("Search term: ").strip()
+            state.page = 1
+        elif cmd == "c":
+            search_term = ""
+            state.page = 1
+        else:
+            error = f"{cmd if cmd else 'That input'} is an invalid option"

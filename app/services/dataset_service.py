@@ -2,14 +2,39 @@ import io
 import os
 from pathlib import Path
 import zipfile
-import csv
+import csv as csv
 from app.models.appstate import AppState
 from app.models.dataset_nolib import DatasetNoLib
 from app.models.dataset_pandas import DatasetPandas
 
+def read_csv(path: Path):
+    print(f"Attempting to read CSV at {path}")
+    with path.open("r", newline="", encoding="utf-8") as f:
+        reader = csv.reader(f)
+        rows = list(reader)
+    if not rows:
+        raise ValueError("Dataset CSV is empty.")
+
+
+    
+    # Row 0 has the column header
+    columns = rows[0]
+    
+    #Row 1 onwards are fully of quality data
+    data_rows = rows[1:]
+
+    # The dataset I downloaded here is broken, with the Discount and DLC count columns not being seperated, becoming "DiscountDLC Count".
+    # Let's identify a mismatch between header and data columns, see if that's the reason for the mismatch, and fix it
+    if "DiscountDLC count" in columns and data_rows:
+        if len(data_rows[0]) == len(columns) + 1:
+            i = columns.index("DiscountDLC count")
+            columns = columns[:i] + ["Discount", "DLC count"] + columns[i + 1:]
+
+    return columns, data_rows
 
 def init_dataset(state: AppState, console=None):
     if not check_data_on_disk(state.dataset_path):
+        print("Apparently data doesn't exist?")
         state.dataset = None
         state.last_results = None
         return False
@@ -19,34 +44,28 @@ def init_dataset(state: AppState, console=None):
             state.dataset = load_pandas(state.dataset_path)
             state.last_results = state.dataset
             return True
-        except Exception:
-            state.dataset = None
-            state.last_results = None
-            return False
-    else:
-        try:
-            state.dataset = load_nolib(state.dataset_path)
-            state.last_results = state.dataset
-            return True
-        except Exception:
-            state.dataset = None
-            state.last_results = None
-            return False
+        except Exception as e:
+            print(f"Pandas load failed: {e}")
+
+    try:
+        state.dataset = load_nolib(state.dataset_path)
+        state.last_results = state.dataset
+        return True
+    except Exception as e:
+        print(f"No-lib load failed: {e}")
+        state.dataset = None
+        state.last_results = None
+        return False
     
 def load_pandas(path: Path) -> DatasetPandas:
     import pandas
-    dataframe = pandas.read_csv(path)
+    columns, rows = read_csv(path)
+    dataframe = pandas.DataFrame(rows, columns=columns)
     return DatasetPandas(dataframe)
 
 def load_nolib(path: Path) -> DatasetNoLib:
-    with path.open("r", newline="", encoding="utf-8") as f:
-        reader = csv.reader(f)
-        rows = list(reader)
-    if not rows:
-        raise ValueError("Dataset CSV is empty.")
-    columns = rows[0]
-    data_rows = rows[1:]
-    return DatasetNoLib(columns, data_rows)
+    columns, rows = read_csv(path)
+    return DatasetNoLib(columns, rows)
 
 def check_data_on_disk(path: Path):
     return path.exists() and path.is_file()

@@ -2,29 +2,79 @@ from rich import box
 from rich.console import Console
 from rich.table import Table
 from app.models.appstate import AppState
+from app.views.rich.active_filters_panel import render_active_filters_panel_rich
+
+# tags were getting in the way and making the dataset table really long
+def compact_tags(value, keep: int = 3) -> str:
+    text = "" if value is None else str(value).strip()
+    if not text:
+        return ""
+    tags = [t.strip() for t in text.split(",") if t.strip()]
+    if len(tags) <= keep:
+        return ", ".join(tags)
+    remaining = len(tags) - keep
+    return f"{', '.join(tags[:keep])} ... ({remaining}+)"
 
 
-def render_dataset_viewer_rich(state: AppState, console: Console, n: int = 20, p: int = 1) -> Table:
+def render_dataset_viewer_rich(state: AppState, console: Console, n: int = 20, p: int = 1, search_term: str = "") -> Table:
     console.clear()
-    
-    df = state.dataframe
+    render_active_filters_panel_rich(state, console)
+
+    dataset = state.last_results if state.last_results is not None else state.dataset
+    if dataset is None:
+        # To be fair we should never get here, we've already done the whole dataset verification and load, but more error handling is good
+        
+        table = Table(title="Dataset Viewer", box=box.SQUARE, show_lines=True, header_style="bold")
+        table.add_column("Status")
+        table.add_row("No dataset loaded")
+        return table
+
+    # TODO: User defines what columns they want to see
     cols = ["Name", "Release date", "Price", "Genres", "Tags", "Windows", "Mac", "Linux", "Positive", "Negative"]
-    cols = [c for c in cols if c in df.columns]
+    available_cols = dataset.columns()
+    cols = [c for c in cols if c in available_cols]
+    if not cols:
+        # If no preferred columns are set just show the first 10 columns
+        cols = available_cols[:10]
+
+    # Begin creating the table
+    total_rows = dataset.row_count()
+    total_pages = max(1, (total_rows + n - 1) // n)
 
     table = Table(
-        title=f"First {n} rows (selected columns)",
+        title=f"Dataset Viewer | Page {p}/{total_pages} | Rows {total_rows}" + (f" | Search: {search_term}" if search_term else ""),
         box=box.SQUARE,      
         show_lines=True,  
         header_style="bold",
     )
+    
+    # Special column formatting handling, overflows and the like
     for c in cols:
-        table.add_column(c, overflow="fold")
+        if c == "Tags":
+            table.add_column(c, overflow="ellipsis", no_wrap=True)
+        else:
+            table.add_column(c, overflow="fold")
 
-    start = p * n
-    end = start + n
-    df_subset = df[cols].iloc[start:end]
+    # Get n rows on page p 
+    rows = dataset.get_page(p, n)
+    
+    # Give each column in the dataset a position 
+    col_index = {name: index for index, name in enumerate(available_cols)}
 
-    for _, row in df_subset.iterrows():
-        table.add_row(*[str(row[c]) if row[c] == row[c] else "" for c in cols]) 
+    # run through the n rows in the currently selected page 
+    for row in rows:
+        out = [] #handy output buffer list
+        for c in cols:
+            index = col_index.get(c)
+            # Set the cell value to an empty string if the value is missing or out of bounds, otherwise use th value
+            val = "" if index is None or index >= len(row) else row[index]
+            
+            # compact the tags so the table doesn't have 10 lines of tags per rows
+            if c == "Tags":
+                out.append(compact_tags(val))
+            else:
+                out.append("" if val is None else str(val))
+                
+        table.add_row(*out)
 
     return table
