@@ -1,4 +1,5 @@
 from rich.console import Console
+from app.controllers.columns_controller import columns_controller
 from app.controllers.filters_controller import filters_controller
 from app.controllers.dataset_controller import view_dataset_controller
 from app.models.appstate import AppState
@@ -21,7 +22,7 @@ def main_menu_controller(state: AppState, console=None):
             error = f"{raw if raw else 'That input'} isn't valid"
             continue
 
-        if choice not in [99, 1, 2]:
+        if choice not in [99, 1, 2, 3]:
             error = f"{choice} isn't valid"
             continue
 
@@ -36,5 +37,8 @@ def main_menu_controller(state: AppState, console=None):
         elif choice == 2:
             clear_terminal(console)
             filters_controller(state, console)
+        elif choice == 3:
+            clear_terminal(console)
+            columns_controller(state, console)
     
     return True

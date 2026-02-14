@@ -13,6 +13,7 @@ def render_main_menu_rich(state: AppState, console: Console, error: str | None =
     console.print("\n[bold]Main Menu[/bold]")
     console.print("1) View dataset")
     console.print("2) Filters")
+    console.print("3) Columns")
     console.print("99) Quit")
     if error:
         console.print(f"[red]{error}[/red]")

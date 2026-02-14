@@ -24,14 +24,18 @@ class SelectedColumns:
             return True
         return column in self.selected
 
-    def toggle(self, column: str) -> None:
+    def toggle(self, column: str | int) -> None:
         if self.selected is None:
             self.selected = []
 
+        if isinstance(column, int):
+            column = self.available_columns[column]
+        
         if column in self.selected:
             self.selected.remove(column)
         else:
             self.selected.append(column)
+         
 
     def resolve(self) -> list[str]:
         if self.selected is None:

@@ -32,6 +32,13 @@ def dataset_controller(state, console=None):
                 f"Columns: [bold]{len(state.dataset.columns())}[/bold]",
                 border_style="green"
             ))
+            
+            console.print(Panel.fit(
+                f"[green]Selected the following default columns:[/green]\n"
+                f"Selected: [bold]{state.columns.resolve() if state.dataset is not None else 0}[/bold]\n"
+                f"[purple]Change selected columns from the main menu[/purple]\n",
+                border_style="purple"
+            ))
             console.input("\nPress Enter to continue...")
             return
 
@@ -90,6 +97,13 @@ def dataset_controller(state, console=None):
             f"Columns: [bold]{len(state.dataset.columns()) if state.dataset is not None else 0}[/bold]",
             border_style="green"
         ))
+        
+        console.print(Panel.fit(
+            f"[green]Selected the following default columns:[/green]\n"
+            f"Selected: [bold]{state.columns.resolve() if state.dataset is not None else 0}[/bold]\n"
+            f"[purple]Change selected columns from the main menu[/purple]\n",
+            border_style="purple"
+        ))
         console.input("\nPress Enter to continue...")
 
         return True
@@ -114,7 +128,7 @@ def apply_search(dataset, search_term: str):
         return DatasetPandas(dataframe[matches])
 
     # As contrasted to our nolib dataset where we do a loop through the rows
-    # TODO: Might be fun to do a time comparison here 
+    # TODO: Might be fun to do a time comparison here l
     if isinstance(dataset, DatasetNoLib):
         needle = search_term
         rows = []

@@ -29,12 +29,13 @@ def render_dataset_viewer_rich(state: AppState, console: Console, n: int = 20, p
         table.add_row("No dataset loaded")
         return table
 
-    # TODO: User defines what columns they want to see
     cols = state.columns.resolve()
     available_cols = state.columns.available_columns
     cols = [c for c in cols if c in available_cols]
     if not cols:
         # If no preferred columns are set just show the first 7 columns
+        # Another thing that should never be reached because column setting
+        # Is handled by the model
         cols = available_cols[:7]
 
     # Begin creating the table
@@ -49,6 +50,8 @@ def render_dataset_viewer_rich(state: AppState, console: Console, n: int = 20, p
     )
     
     # Special column formatting handling, overflows and the like
+    # TODO: Handle all columns that might overflow
+    # FIXME: Displaying about game column crashes the app ?due to unescaped tags crashing Rich
     for c in cols:
         if c == "Tags":
             table.add_column(c, overflow="ellipsis", no_wrap=True)
