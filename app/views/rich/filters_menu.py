@@ -13,7 +13,7 @@ def render_filters_menu_rich(state: AppState, console: Console) -> None:
         f"[bold]3)[/bold] Genre contains: {f.genre_contains or '—'}",
         f"[bold]4)[/bold] Minimum review score: {f.min_review_score if f.min_review_score is not None else '—'}",
         f"[bold]5)[/bold] Minimum reviews: {f.min_reviews if f.min_reviews is not None else '—'}",
-        f"[bold]6)[/bold] Games marked as 'adult': {f.adult_content if f.adult_content is not None else '—'}",
+        f"[bold]6)[/bold] Games marked as 'adult': {f.show_adult_content if f.show_adult_content is not None else '—'}",
         "",
         "[bold red]99)[/bold red] Clear all filters",
         "[bold]0)[/bold] Back to main menu",

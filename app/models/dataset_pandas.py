@@ -21,6 +21,16 @@ class DatasetPandas(Dataset):
         # check if the filter is set
         # loop through the relevant columns 
         # type check the values in each cell and then alter the dataframe to accomodate 
+        # move on to next filter 
+        
+        if filters.show_adult_content is False:
+            nsfw_tags = ["nudity", "adult only", "hentai", "erotic"]
+            nsfw_pattern = "|".join(nsfw_tags)
+            for col in ("Tags",):
+                if col in dataframe.columns:
+                    has_nsfw_tag = dataframe[col].astype(str).str.contains(nsfw_pattern, case=False, na=False)
+                    dataframe = dataframe[has_nsfw_tag == False]
+                    break
         
         if filters.year_min is not None or filters.year_max is not None:
             for col in ("Release date"):
@@ -64,7 +74,7 @@ class DatasetPandas(Dataset):
                     reviews = pandas.to_numeric(dataframe[col], errors="coerce")
                     dataframe = dataframe[reviews >= filters.min_reviews]
                     break
-
+        
         return DatasetPandas(dataframe)
 
     def get_page(self, page: int, page_size: int) -> list[Row]:

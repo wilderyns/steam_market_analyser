@@ -27,6 +27,13 @@ class DatasetNoLib(Dataset):
         # these function is responisble for type checking and seeing if the row arg passed to it
         # meets the filter it's defined for
         # then work through each filter (if set) looping through the rows and gradually cutting them down
+
+        if filters.show_adult_content is False:
+            nsfw_tags = ["nudity", "adult only", "hentai", "erotic"]
+            rows = [
+                row for row in rows
+                if not any(tag in str(cell(row, "Tags") or "").lower() for tag in nsfw_tags)
+            ]
         
         if filters.year_min is not None or filters.year_max is not None:
             def year_ok(row: Row) -> bool:
@@ -88,18 +95,6 @@ class DatasetNoLib(Dataset):
                     return False
             rows = [row for row in rows if reviews_ok(row)]
 
-        if filters.adult_content is not None:
-            def adult_ok(row: Row) -> bool:
-                value = cell(row, "Required age")
-                if value is None:
-                    return True
-                if filters.adult_content is not None and value < 18:
-                    return False
-                if filters.adult_content is not None and value >= 18:
-                    return False
-                return True
-                
-                    
         return DatasetNoLib(self._columns, rows)
 
     def get_page(self, page: int, page_size: int) -> list[Row]:

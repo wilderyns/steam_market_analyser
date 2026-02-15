@@ -36,8 +36,8 @@ def assemble_active_filters_panel(state: AppState):
         parts.append(f"[bold]Min reviews[/bold]: {f.min_reviews}")
 
     # adult content 
-    if f.adult_content is not None:
-        parts.append(f"[bold]Adult content[/bold]: {f.adult_content}")
+    if f.show_adult_content is not None:
+        parts.append(f"[bold]Adult content[/bold]: {f.show_adult_content}")
         
     return " : ".join(parts) if parts else "None"
 

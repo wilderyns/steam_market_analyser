@@ -30,7 +30,7 @@ def filters_controller(state: AppState, console=None):
         elif choice == 5:
             f.min_reviews = expect_user_input(int, None, 0, None, console, "Minimum reviews: ")
         elif choice == 6:
-            f.adult_content = expect_user_input(bool, None, None, None, console, "Display adult games? ")
+            f.show_adult_content = expect_user_input(bool, None, None, None, console, "Display adult games? ")
         elif choice == 99:
             state.reset_filters()
 

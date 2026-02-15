@@ -9,4 +9,18 @@ class Filters:
     genre_contains: Optional[str] = None
     min_review_score: Optional[float] = None  
     min_reviews: Optional[int] = None
-    adult_content: Optional[bool] = False
+    show_adult_content: Optional[bool] = False
+    
+    # Not yet implemented 
+    on_windows: Optional[bool] = True
+    on_mac: Optional[bool] = True
+    on_linux: Optional[bool] = True
+    owners_min: Optional[int] = None
+    owners_max: Optional[int] = None
+    ccu_min: Optional[int] = None
+    ccu_max: Optional[int] = None
+    minimum_age: Optional[int] = None
+    
+    
+    
+    # Peak CCU,Required age,Price,DiscountDLC count,About the game,Supported languages,Full audio languages,Reviews,Header image,Website,Support url,Support email,Windows,Mac,Linux,Metacritic score,Metacritic url,User score,Positive,Negative,Score rank,Achievements,Recommendations,Notes,Average playtime forever,Average playtime two weeks,Median playtime forever,Median playtime two weeks,Developers,Publishers,Categories,Genres,Tags,Screenshots,Movies
