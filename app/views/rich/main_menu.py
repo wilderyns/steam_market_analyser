@@ -14,6 +14,10 @@ def render_main_menu_rich(state: AppState, console: Console, error: str | None =
     console.print("1) View dataset")
     console.print("2) Filters")
     console.print("3) Columns")
+    console.print("4) Perform Transformations [yellow]In Progress[/yellow]")
+    console.print("5) Conduct Analysis [red]TODO[/red]")
+    console.print("6) Generate Graphs [red]TODO[/red]")
+    console.print("7) Exporting [red]TODO[/red]")
     console.print("99) Quit")
     if error:
         console.print(f"[red]{error}[/red]")
