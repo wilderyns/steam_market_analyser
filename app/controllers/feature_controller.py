@@ -4,6 +4,19 @@ from app.services.feature_service import detect_features
 
 
 def feature_controller(state: AppState):
+    """
+    During app initilization, calls feature service to detect features and handles output display
+    
+    Args:
+        state (AppState): application state controller
+        
+    Returns:
+        True if all is well, False if Rich isn't available
+        #TODO: When the Nolib display variant is done allow things to progress
+    
+    Exceptions:
+        RuntimeError: if Rich is unavailable 
+    """
     print("Getting everything ready...")
     state.features = detect_features()
     render_feature_check(state.features)

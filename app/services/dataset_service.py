@@ -8,6 +8,16 @@ from app.models.dataset_nolib import DatasetNoLib
 from app.models.dataset_pandas import DatasetPandas
 
 def read_csv(path: Path):
+    """
+    Read CSV at specified path and return the column headers and the rows of data
+    
+    Args:
+        path (Path): The path to the csv file
+        
+    Returns:
+        tuple: (columns[str], data_rows[str]) with column headers and rows of data
+    """
+    
     print(f"Attempting to read CSV at {path}")
     with path.open("r", newline="", encoding="utf-8") as f:
         reader = csv.reader(f)
@@ -15,8 +25,6 @@ def read_csv(path: Path):
     if not rows:
         raise ValueError("Dataset CSV is empty.")
 
-
-    
     # Row 0 has the column header
     columns = rows[0]
     
@@ -32,7 +40,21 @@ def read_csv(path: Path):
 
     return columns, data_rows
 
-def init_dataset(state: AppState, console=None):
+def init_dataset(state: AppState):
+    """
+    Check csv at dataset_path exists, then use load_pandas() or load_nolib() as appropriate 
+    
+    Args:
+        state (AppState): Application state, used for dataset_path and to store dataset
+        
+    Returns:
+        bool: True if successful, False otherwise
+        
+    Exceptions:
+        Pandas load failed
+        Nolib load failed
+    """
+    
     if not check_data_on_disk(state.dataset_path):
         print("Apparently data doesn't exist?")
         state.dataset = None
@@ -60,23 +82,71 @@ def init_dataset(state: AppState, console=None):
         return False
     
 def load_pandas(path: Path) -> DatasetPandas:
+    """
+    Read dataset csv and load into pandas dataframe 
+    
+    Args:
+        path (Path): Dataset path
+        
+    Returns:
+        DatasetPandas: (DataFrame) create a new instance of a pandas dataframe
+    """
     import pandas
     columns, rows = read_csv(path)
     dataframe = pandas.DataFrame(rows, columns=columns)
     return DatasetPandas(dataframe)
 
 def load_nolib(path: Path) -> DatasetNoLib:
+    """
+    Read dataset csv and load into a standard library dataset (DatasetNoLib) 
+    
+    Args:
+        path (Path): Dataset path
+        
+    Returns:
+        DatasetNoLib: (columns: list[str], rows: list[str]) create a new instance of our own dataset passing in our column headers and data rows
+    """
     columns, rows = read_csv(path)
     return DatasetNoLib(columns, rows)
 
 def check_data_on_disk(path: Path):
+    """
+    Simply check a passed path exists
+    
+    Args:
+        path (Path): Dataset path
+        
+    Returns:
+        bool: True if file exists, otherwise false
+    """
     return path.exists() and path.is_file()
 
 def attempt_data_download(state: AppState, dest_path=None):
+    """
+    Download from dataset URL as defined in state.dataset_url, unzip, delete .json copy, move and rename .csv into data directory
+    
+    Args:
+        state (AppSate): Application state used for state.dataset_path, state.dataset_url
+        dest_path (str): Override path to save downloaded files
+        #TODO: How about a URL override too?
+        
+    Returns:
+        None. #TODO: Make this return success or not
+        
+    Exceptions:
+        #TODO: make a variation using the standard library
+        RuntimeError: if requests is not installed 
+        RuntimeError: if both state.dataset_url and dest_path arg are unset
+        PermissionError: On 401 or 403 of trying to download the dataset
+        RuntimeError: On 200 error
+        RunetimeError: If zip file extraction fails for whatever reason
+        RunetimeError: If csv file can't be found after extraction    
+    """
+    
     if not state.features.has_requests:
         raise RuntimeError("Requests library not installed; cannot fetch dataset automatically.")
 
-    if not state.dataset_url:
+    if not state.dataset_url and dest_path is None:
         raise RuntimeError("Dataset URL unset, cannot fetch the dataset if I don't know where it lives.")
     
     import requests 
@@ -118,6 +188,15 @@ def attempt_data_download(state: AppState, dest_path=None):
         
     os.rename(str(extracted_csv), str(dest))
 
-# Populate our available columns of the selected columns model in state
 def populate_columns(state: AppState, headers: list[str]):
+    """
+    Populate our available columns of the selected columns model in state
+    
+    Args:
+        state (AppState)
+        headers (list[str]): Passes in column headers
+        
+    Returns:
+        None
+    """
     state.columns.available_columns = headers

@@ -7,6 +7,16 @@ from app.views.rich.filters_menu import render_filters_menu_rich
 todays_date = date.today()
 
 def filters_controller(state: AppState, console=None):
+    """
+    Handles filter menu loop, offering user input and view display
+    
+    Args:
+        state (AppState): application state controller
+        console (optional, Console): Rich Console
+        
+    Returns:
+        None
+    """
     render_filters_menu_rich(state, console)
     
     while True:        

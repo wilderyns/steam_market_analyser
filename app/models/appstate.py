@@ -8,6 +8,22 @@ from app.models.selected_columns import SelectedColumns
 
 
 class AppState:
+    """
+    AppState holds crucial attributes used throughout the application
+
+    Attributes:
+    dataset_path (Path): Path to the csv dataset. Unset by default.
+    dataset_url (str): URL to the dataset zip download. Default: "https://www.kaggle.com/api/v1/datasets/download/fronkongames/steam-games-dataset"
+    dataset (DatasetPandas | DatasetNoLib | None): Active dataset instance. This will become a DatasetPandas or a DatasetNoLib (for standard library implementation)
+    columns (SelectedColumns): Stores currently selected columns as well as all the availabale columns
+    filters (Filters): Activated filter criteria for the dataset 
+    last_results (DatasetPandas | DatasetNoLib | None): The most recent search result, type matched to the AppState dataset type
+    features (Features): Libraries present, detected by features service at startup
+    page (int): current page selected in the dataset viewer
+    sug_term_width (int): Suggestd terminal width
+    sug_term_height (int): Suggested terminal height
+    """
+    
     dataset_path: Path
     dataset_url: str = "https://www.kaggle.com/api/v1/datasets/download/fronkongames/steam-games-dataset"
     dataset: Optional[Dataset] = None

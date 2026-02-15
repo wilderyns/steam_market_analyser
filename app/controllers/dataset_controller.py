@@ -10,6 +10,16 @@ from app.views.rich.dataset_viewer import render_dataset_viewer_rich
 # Doing the view view logic here, should be broken into its own view 
 
 def dataset_controller(state, console=None):
+    """
+    Handles app initilization dataset loading 
+    
+    Args:
+        state (AppState): application state controller
+        console (optional, Console): Rich Console
+        
+    Returns:
+        Can return None, however will return True if everything went okay or raise a SystemExist if it didn't
+    """
     if console is None or not hasattr(console, "size"):
         print("loading dataset")
         init_dataset(state)
@@ -40,7 +50,7 @@ def dataset_controller(state, console=None):
                 border_style="purple"
             ))
             console.input("\nPress Enter to continue...")
-            return
+            return True
 
         # If dataset doesn't exist 
         if not state.features.has_requests:
@@ -109,7 +119,20 @@ def dataset_controller(state, console=None):
         return True
 
 
-def apply_search(dataset, search_term: str):
+def apply_search(dataset: DatasetPandas | DatasetNoLib, search_term: str):
+    """
+    Dataset viewer search function
+    #TODO: stop doing the actual search here, move that to our model, then use the pm Dataset
+    
+    Args:
+        dataset (AppState): Our dataset
+        search_term (string): the term to search
+        
+    Returns:
+        DatasetPandas or DatasetNolib depending on the passed initial dataset
+        #TODO: Again, move the search logic outta here so a generic dataset can be returned 
+    """
+    
     if not search_term:
         return dataset
 
@@ -144,6 +167,17 @@ def apply_search(dataset, search_term: str):
 
 
 def view_dataset_controller(state: AppState, console, page_size: int = 20):
+    """
+    Handles dataset viewer menu loop, offering user input and view display
+    
+    Args:
+        state (AppState): application state controller
+        console (optional, Console): Rich Console
+        page_size (int): How many rows to display per page
+        
+    Returns:
+        None
+    """
     if state.dataset is None:
         console.print("[red]Dataset not loaded.[/red]")
         console.input("Press Enter to return...")

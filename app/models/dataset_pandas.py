@@ -3,6 +3,13 @@ from app.models.filters import Filters
 
 
 class DatasetPandas(Dataset):
+    """
+    DatasetPandas stores our CSV using a pandas dataframe backend 
+
+    Attributes:
+    df (pandas.DataFrame): Dataframe containing all dataset columns and rows
+    """
+    
     def __init__(self, df):
         self.df = df
 

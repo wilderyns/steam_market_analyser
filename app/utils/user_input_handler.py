@@ -1,16 +1,28 @@
 # Sanitize and error check menu input 
 from typing import Optional
 
+from app.utils.terminal import clear_terminal_lines
+
 def expect_user_input(t: type[str | int | float | bool], choices: Optional[list[str | int | float | bool]] = None, min_val: Optional[int | float] = None, max_val: Optional[int | float] = None, console=None, prompt: str = "Select an option: "):
+    """
+    Handles user input prompts, checks types, handles displaying user input error
+    
+    Args:
+        t (str | int | float | bool): Type of user input to expect
+        choices (Optional, list[str | int | float | bool]): List of user inputs that are allowed 
+        min_val (Optional, int | float): Minimum integer value expected 
+        max_val (Optional, int | float): Maximum integer value expected
+        console (Console): Rich console object
+        prompt (Optional, str): Text display before user input area
+        
+    Returns:
+        val: A string, integer, float, or bool, depending on user input type allowed
+    """
+    
     had_error = False
     last_error: Optional[str] = None
     rendered_error = False
     
-    def clear_lines(count: int):
-        if console is not None and count > 0:
-            console.file.write("\033[1A\033[2K" * count)
-            console.file.flush()
-
     def show_error(msg: str):
         if console is not None:
             console.print(f"[red]{msg}[/red]")
@@ -29,7 +41,7 @@ def expect_user_input(t: type[str | int | float | bool], choices: Optional[list[
         if had_error:
             if console is not None:
                 # keeping the console clean by only showing one error
-                clear_lines(2 if rendered_error else 1)
+                clear_terminal_lines(2 if rendered_error else 1, console)
             if last_error is not None:
                 show_error(last_error)
                 rendered_error = True

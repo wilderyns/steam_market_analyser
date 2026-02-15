@@ -3,6 +3,14 @@ from app.models.filters import Filters
 
 
 class DatasetNoLib(Dataset):
+    """
+    DatasetNoLib stores the dataset CSV as 2 lists as in attrbutes below
+
+    Attributes:
+    _columns (list[str]): Column headers 
+    rows (list[Row]): Dataset rows, where each row is a list of cell values aligned to _columns
+    """
+    
     def __init__(self, columns: list[str], rows: list[Row]):
         self._columns = columns
         self.rows = rows

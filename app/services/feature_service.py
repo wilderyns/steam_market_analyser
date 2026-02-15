@@ -3,6 +3,15 @@ from app.models.features import Features
 # type: ignore
 
 def detect_features() -> Features:
+    """
+    Try and import the required Python libraries and return an instance of the Features class with results
+    
+    Args:
+        None
+        
+    Returns:
+        Features: Class with attributes for each feature's status as a bool
+    """
     f = Features()
 
     try:

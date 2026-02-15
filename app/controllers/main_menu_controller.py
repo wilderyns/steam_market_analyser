@@ -7,6 +7,16 @@ from app.utils.terminal import clear_terminal
 from app.views.rich.main_menu import render_main_menu_rich
 
 def main_menu_controller(state: AppState, console=None):
+    """
+    Handles main menu display loop and input
+    
+    Args:
+        state (AppState): application state controller
+        console (optional, Console): Rich Console
+        
+    Returns:
+        None
+    """
     if console is None or not hasattr(console, "size"):
         raise RuntimeError("Console from Rich not defined")
 

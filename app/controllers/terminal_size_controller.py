@@ -3,6 +3,21 @@ from app.views.rich.terminal_size import render_terminal_size_check_rich
 
 
 def terminal_size_controller(state, console=None) -> None:
+    """
+    During initilization handle terminal size checking and displaying results
+    
+    Args:
+        state (AppState): application state controller
+        console (optional, Console): Rich Console
+        
+    Returns:
+        None
+        
+    Exceptions:
+        RuntimeError: if Rich is unavailable 
+        #TODO: When the Nolib display variant is done allow things to progress
+    
+    """
     if console is None or not hasattr(console, "size"):
         raise RuntimeError("Console from Rich not defined")
     
