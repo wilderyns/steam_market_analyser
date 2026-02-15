@@ -23,9 +23,14 @@ class DatasetNoLib(Dataset):
                     return row[col_map[name]]
             return None
 
+        # each filter has a function which is defined when the corresponding filter is set
+        # these function is responisble for type checking and seeing if the row arg passed to it
+        # meets the filter it's defined for
+        # then work through each filter (if set) looping through the rows and gradually cutting them down
+        
         if filters.year_min is not None or filters.year_max is not None:
             def year_ok(row: Row) -> bool:
-                value = cell(row, "Release date", "release_date", "ReleaseDate")
+                value = cell(row, "Release date")
                 if value is None:
                     return True
                 year = int(str(value)[-4:]) if str(value)[-4:].isdigit() else None
@@ -40,7 +45,7 @@ class DatasetNoLib(Dataset):
 
         if filters.price_min is not None or filters.price_max is not None:
             def price_ok(row: Row) -> bool:
-                value = cell(row, "Price", "price")
+                value = cell(row, "Price")
                 if value is None:
                     return True
                 try:
@@ -55,15 +60,15 @@ class DatasetNoLib(Dataset):
             rows = [row for row in rows if price_ok(row)]
 
         if filters.genre_contains:
-            needle = filters.genre_contains.lower()
+            search_term = filters.genre_contains.lower()
             rows = [
                 row for row in rows
-                if needle in str(cell(row, "Genres", "genres", "Tags", "tags") or "").lower()
+                if search_term in str(cell(row, "Genres", "Tags") or "").lower()
             ]
 
         if filters.min_review_score is not None:
             def score_ok(row: Row) -> bool:
-                value = cell(row, "User score", "user_score", "Review score", "review_score")
+                value = cell(row, "User score", "Review score")
                 if value is None:
                     return True
                 try:
@@ -74,7 +79,7 @@ class DatasetNoLib(Dataset):
 
         if filters.min_reviews is not None:
             def reviews_ok(row: Row) -> bool:
-                value = cell(row, "Recommendations", "recommendations", "Positive", "positive")
+                value = cell(row, "Recommendations", "Positive")
                 if value is None:
                     return True
                 try:
@@ -83,6 +88,18 @@ class DatasetNoLib(Dataset):
                     return False
             rows = [row for row in rows if reviews_ok(row)]
 
+        if filters.adult_content is not None:
+            def adult_ok(row: Row) -> bool:
+                value = cell(row, "Required age")
+                if value is None:
+                    return True
+                if filters.adult_content is not None and value < 18:
+                    return False
+                if filters.adult_content is not None and value >= 18:
+                    return False
+                return True
+                
+                    
         return DatasetNoLib(self._columns, rows)
 
     def get_page(self, page: int, page_size: int) -> list[Row]:

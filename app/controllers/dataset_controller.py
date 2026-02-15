@@ -130,13 +130,12 @@ def apply_search(dataset, search_term: str):
     # As contrasted to our nolib dataset where we do a loop through the rows
     # TODO: Might be fun to do a time comparison here l
     if isinstance(dataset, DatasetNoLib):
-        needle = search_term
         rows = []
         append_row = rows.append
         to_str = str
         for row in dataset.rows:
             for cell in row:
-                if needle in to_str(cell).lower():
+                if search_term in to_str(cell).lower():
                     append_row(row)
                     break
         return DatasetNoLib(dataset.columns(), rows)

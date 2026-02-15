@@ -17,8 +17,13 @@ class DatasetPandas(Dataset):
 
         dataframe = self.df
 
+        # All these filter conditions essentially do the same thing 
+        # check if the filter is set
+        # loop through the relevant columns 
+        # type check the values in each cell and then alter the dataframe to accomodate 
+        
         if filters.year_min is not None or filters.year_max is not None:
-            for col in ("Release date", "release_date", "ReleaseDate"):
+            for col in ("Release date"):
                 if col in dataframe.columns:
                     years = dataframe[col].astype(str).str.extract(r"(\d{4})", expand=False)
                     years = pandas.to_numeric(years, errors="coerce")
@@ -30,7 +35,7 @@ class DatasetPandas(Dataset):
                     break
 
         if filters.price_min is not None or filters.price_max is not None:
-            for col in ("Price", "price"):
+            for col in ("Price"):
                 if col in dataframe.columns:
                     prices = pandas.to_numeric(dataframe[col], errors="coerce")
                     if filters.price_min is not None:
@@ -41,20 +46,20 @@ class DatasetPandas(Dataset):
                     break
 
         if filters.genre_contains:
-            for col in ("Genres", "genres", "Tags", "tags"):
+            for col in ("Genres", "Tags"):
                 if col in dataframe.columns:
                     dataframe = dataframe[dataframe[col].astype(str).str.contains(filters.genre_contains, case=False, na=False)]
                     break
 
         if filters.min_review_score is not None:
-            for col in ("User score", "user_score", "Review score", "review_score"):
+            for col in ("User score", "Review score"):
                 if col in dataframe.columns:
                     scores = pandas.to_numeric(dataframe[col], errors="coerce")
                     dataframe = dataframe[scores >= filters.min_review_score]
                     break
 
         if filters.min_reviews is not None:
-            for col in ("Recommendations", "recommendations", "Positive", "positive"):
+            for col in ("Recommendations", "Positive"):
                 if col in dataframe.columns:
                     reviews = pandas.to_numeric(dataframe[col], errors="coerce")
                     dataframe = dataframe[reviews >= filters.min_reviews]
