@@ -4,6 +4,7 @@ from app.controllers.filters_controller import filters_controller
 from app.controllers.dataset_controller import view_dataset_controller
 from app.models.appstate import AppState
 from app.utils.terminal import clear_terminal
+from app.utils.user_input_handler import expect_user_input
 from app.views.rich.main_menu import render_main_menu_rich
 
 def main_menu_controller(state: AppState, console=None):
@@ -24,19 +25,8 @@ def main_menu_controller(state: AppState, console=None):
 
     while True:
         render_main_menu_rich(state, console, error)
-        raw = console.input("Select an option: ").strip()
-
-        try:
-            choice = int(raw)
-        except ValueError:
-            error = f"{raw if raw else 'That input'} isn't valid"
-            continue
-
-        if choice not in [99, 1, 2, 3]:
-            error = f"{choice} isn't valid"
-            continue
-
-        error = None
+        
+        choice = expect_user_input(int, [1, 2, 3, 99], None, None, console)
 
         if choice == 99:
             console.print("Goodbye!")
