@@ -5,6 +5,12 @@ Cell: TypeAlias = str | int | float | bool
 Row: TypeAlias = list[Cell]
 
 class Dataset:
+    """
+    The shared interface for dataset backends
+
+    This class is not used directly but instead exists so the code throughout the application can use a single Dataset type
+    """
+    
     def columns(self) -> list[str]:
         raise NotImplementedError
 
