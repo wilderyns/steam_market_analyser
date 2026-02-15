@@ -4,7 +4,7 @@ from app.views.rich.terminal_size import render_terminal_size_check_rich
 
 def terminal_size_controller(state, console=None) -> None:
     """
-    During initilization handle terminal size checking and displaying results
+    During initilisation handle terminal size checking and displaying results
     
     Args:
         state (AppState): application state controller

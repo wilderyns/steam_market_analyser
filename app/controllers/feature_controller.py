@@ -5,7 +5,7 @@ from app.services.feature_service import detect_features
 
 def feature_controller(state: AppState):
     """
-    During app initilization, calls feature service to detect features and handles output display
+    During app initilisation, calls feature service to detect features and handles output display
     
     Args:
         state (AppState): application state controller

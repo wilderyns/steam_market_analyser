@@ -11,7 +11,7 @@ from app.views.rich.dataset_viewer import render_dataset_viewer_rich
 
 def dataset_controller(state, console=None):
     """
-    Handles app initilization dataset loading 
+    Handles app initilisation dataset loading 
     
     Args:
         state (AppState): application state controller
