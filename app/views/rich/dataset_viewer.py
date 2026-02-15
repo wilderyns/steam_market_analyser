@@ -84,6 +84,10 @@ def render_dataset_viewer_rich(state: AppState, console: Console, n: int = 20, p
                 val = val.replace("[", "").replace("]", "").replace("\'", "")
                 val = val[:50] + "..." if len(val) > n else val
                 out.append(val)
+            #Add currency symbol
+            if c == "Price":
+                val = "$"+val
+                out.append(val)
             else:
                 out.append("" if val is None else str(val))
                 
