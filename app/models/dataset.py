@@ -22,3 +22,6 @@ class Dataset:
     
     def get_page(self, page: int, page_size: int) -> list[Row]:
         raise NotImplementedError
+    
+    def search(self, search_term) -> Dataset:
+        raise NotImplementedError

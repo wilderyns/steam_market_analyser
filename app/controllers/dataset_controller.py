@@ -190,7 +190,7 @@ def view_dataset_controller(state: AppState, console, page_size: int = 20):
     while True:
         clear_terminal(console)
         filtered = state.dataset.filter(state.filters)
-        searched = apply_search(filtered, search_term)
+        searched = filtered.search(search_term)
         state.last_results = searched
 
         total_rows = searched.row_count()

@@ -95,3 +95,43 @@ class DatasetPandas(Dataset):
         for _, row in self.df.iloc[start:end].iterrows():
             rows.append([value.item() if hasattr(value, "item") else value for value in row.tolist()])
         return rows
+    
+    def get_column_values(self, columns: list[str]) -> list[Row]:
+        """
+        Takes 1 or columns and returns all the rows within those column/s
+        
+        Args:
+        to_transform (str | list[str | int | bool]): The string or list to count
+        seperator (str | None): The seperator for a to_tranform given as a string
+        dataset (Dataset): The dataset where the new column will be added
+        new_column_name (str): The name of the new column to add to the dataset
+        
+        Returns:
+        None
+        """
+        selection = self.df.loc[:, columns]
+        return [list(values) for values in selection.itertuples(index=False, name=None)]
+
+    def search(self, search_term: str) -> DatasetPandas:
+        """
+        Dataset viewer search function
+        
+        Args:
+            search_term (string): the term to search
+            
+        Returns:
+            Dataset
+        """
+        
+        if not search_term:
+            return self
+
+        search_term = search_term.lower()
+
+        # Very cool casting of our entire dataset as strings 
+        text = self.df.astype(str)
+            
+        # Cool pandas stuff, allowing you to apply a function to an entire dataset
+        # And then pythons anonymous functions make for some very neat coding 
+        matches = text.apply(lambda col: col.str.contains(search_term, case=False, na=False)).any(axis=1)
+        return DatasetPandas(self.df[matches])
