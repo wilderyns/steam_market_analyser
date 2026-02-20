@@ -105,11 +105,41 @@ class DatasetNoLib(Dataset):
 
         return DatasetNoLib(self._columns, rows)
 
-    def get_page(self, page: int, page_size: int) -> list[Row]:
-        if page < 1:
-            page = 1
-        if page_size < 1:
-            page_size = 1
-        start = (page - 1) * page_size
-        end = start + page_size
-        return self.rows[start:end]
+    def get_column_values(self, columns: list[str]) -> list[Row]:
+        """
+        Takes 1 or columns and returns all the rows within those column/s
+        
+        Args:
+        to_transform (str | list[str | int | bool]): The string or list to count
+        seperator (str | None): The seperator for a to_tranform given as a string
+        dataset (Dataset): The dataset where the new column will be added
+        new_column_name (str): The name of the new column to add to the dataset
+        
+        Returns:
+        None
+        """
+        selection = self.df.loc[:, columns]
+        return [list(values) for values in selection.itertuples(index=False, name=None)]
+
+    def search(self, search_term: str) -> DatasetNoLib:
+        """
+        Dataset viewer search function
+        #TODO: test
+        
+        Args:
+            search_term (string): the term to search
+            
+        Returns:
+            Dataset
+        """
+        
+        rows = []
+        append_row = rows.append
+        to_str = str
+        for row in self.rows:
+            for cell in row:
+                if search_term in to_str(cell).lower():
+                    append_row(row)
+                    break
+                
+        return DatasetNoLib(self.columns(), rows)

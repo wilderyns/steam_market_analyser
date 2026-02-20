@@ -118,54 +118,6 @@ def dataset_controller(state, console=None):
 
         return True
 
-
-def apply_search(dataset: DatasetPandas | DatasetNoLib, search_term: str):
-    """
-    Dataset viewer search function
-    #TODO: stop doing the actual search here, move that to our model, then use the pm Dataset
-    
-    Args:
-        dataset (AppState): Our dataset
-        search_term (string): the term to search
-        
-    Returns:
-        DatasetPandas or DatasetNolib depending on the passed initial dataset
-        #TODO: Again, move the search logic outta here so a generic dataset can be returned 
-    """
-    
-    if not search_term:
-        return dataset
-
-    search_term = search_term.lower()
-
-    # If our dataset is using Pandas
-    if isinstance(dataset, DatasetPandas):
-        dataframe = dataset.df
-        
-        # Very cool casting of our entire dataset as strings 
-        text = dataframe.astype(str)
-        
-        # Again more cool pandas stuff, allowing you to apply a function to an entire dataset
-        # And then pythons anonymous functions make for some very neat coding 
-        matches = text.apply(lambda col: col.str.contains(search_term, case=False, na=False)).any(axis=1)
-        return DatasetPandas(dataframe[matches])
-
-    # As contrasted to our nolib dataset where we do a loop through the rows
-    # TODO: Might be fun to do a time comparison here l
-    if isinstance(dataset, DatasetNoLib):
-        rows = []
-        append_row = rows.append
-        to_str = str
-        for row in dataset.rows:
-            for cell in row:
-                if search_term in to_str(cell).lower():
-                    append_row(row)
-                    break
-        return DatasetNoLib(dataset.columns(), rows)
-
-    return dataset
-
-
 def view_dataset_controller(state: AppState, console, page_size: int = 20):
     """
     Handles dataset viewer menu loop, offering user input and view display
