@@ -12,82 +12,172 @@ class Dataset:
     """
     
     def columns(self) -> list[str]:
+        """
+        Return all column names in the dataset
+        
+        Args:
+            None
+            
+        Returns:
+            list[str]
+        """
         raise NotImplementedError
 
     def row_count(self) -> int:
+        """
+        Return total row count of the dataset
+        
+        Args:
+            None
+            
+        Returns:
+            int
+        """
         raise NotImplementedError
 
     def filter(self, filters: Filters) -> Dataset:
+        """
+        Apply filters and return a filtered dataset
+        
+        Args:
+            filters (Filters): Filters object with active filter values
+            
+        Returns:
+            Dataset
+        """
         raise NotImplementedError
     
     def get_page(self, page: int, page_size: int) -> list[Row]:
+        """
+        Return one page of row data
+        
+        Args:
+            page (int): The page number to return
+            page_size (int): Number of rows per page
+            
+        Returns:
+            list[Row]
+        """
         raise NotImplementedError
     
     def search(self, search_term) -> Dataset:
+        """
+        Search dataset values and return matched rows
+        
+        Args:
+            search_term (str): Search term to match
+            
+        Returns:
+            Dataset
+        """
+        raise NotImplementedError
+
+    def get_column_values(self, columns: list[str]) -> list[Row]:
+        """
+        Return row values from one or more columns
+        
+        Args:
+            columns (list[str]): Column names to return data from
+            
+        Returns:
+            list[Row]
+        """
+        raise NotImplementedError
+
+    def column_exists(self, column_name: str) -> bool:
+        """
+        Check if a column exists in the dataset
+        
+        Args:
+            column_name (str): Name of column to check
+            
+        Returns:
+            bool
+        """
         raise NotImplementedError
     
-    def transform_create_count(self, new_column_name: str, to_transform: str | list[str | int | bool], seperator: str | None):
+    def transform_create_count(self, new_column_name: str, source_column: str, seperator: str | None, overwrite: bool = False) -> None:
         """
-        Takes a string, splits at the seperator, and creates a new column with the count. Or takes a list and creates a new column with the count.
+        Create a count column from a source column
         
         Args:
-            to_transform (str | list[str | int | bool]): The string or list to count
-            seperator (str | None): The seperator for a to_tranform given as a string
-            dataset (Dataset): The dataset where the new column will be added
-            new_column_name (str): The name of the new column to add to the dataset
+            new_column_name (str): Name of new column to create
+            source_column (str): Column to read values from
+            seperator (str | None): Seperator to split string values by
+            overwrite (bool): Replace existing target column if True
             
         Returns:
             None
         """
-        return 
+        raise NotImplementedError
 
-    def transform_column_combine(self, column1, column2, new_column):
+    def transform_column_combine(self, column1: str, column2: str, new_column: str, overwrite: bool = False) -> None:
         """
-        Creates a new column by combining values from previous columns
+        Create a new column by combining two numeric columns
         
         Args:
-            None
+            column1 (str): First source column
+            column2 (str): Second source column
+            new_column (str): New column name
+            overwrite (bool): Replace existing target column if True
             
         Returns:
             None
         """
-        return 
+        raise NotImplementedError
 
-    def transform_create_log(self, logcolumn, newcolumn):
+    def transform_create_log(self, logcolumn: str, newcolumn: str, overwrite: bool = False) -> None:
         """
-        Creates new log scaled column from a non scaled column
+        Create a log scaled column from a source column
         
         Args:
-            None
+            logcolumn (str): Source column name
+            newcolumn (str): New column name
+            overwrite (bool): Replace existing target column if True
             
         Returns:
             None
         """
-        return
+        raise NotImplementedError
 
-    def transform_create_minmax(self, mmcolumn, newcolumn):
+    def transform_create_minmax(self, mmcolumn: str, newcolumn: str, overwrite: bool = False) -> None:
         """
-        Creates new min/max scaled column 
+        Create a min max scaled column from a source column
         
         Args:
-            None
+            mmcolumn (str): Source column name
+            newcolumn (str): New column name
+            overwrite (bool): Replace existing target column if True
             
         Returns:
             None
         """
-        return 
+        raise NotImplementedError
 
-    def transform_create_zscore(self, scorecolumn, newcolumn):
+    def transform_create_zscore(self, scorecolumn: str, newcolumn: str, overwrite: bool = False) -> None:
         """
-        Creates a zscore column
+        Create a zscore column from a source column
         
         Args:
-            None
+            scorecolumn (str): Source column name
+            newcolumn (str): New column name
+            overwrite (bool): Replace existing target column if True
             
         Returns:
             None
         """
-        return 
+        raise NotImplementedError
     
-    def create_new_column(self, column_name, rows):
-        return
+    def create_new_column(self, column_name: str, rows: list, overwrite: bool = False) -> None:
+        """
+        Create a new column from provided row values
+        
+        Args:
+            column_name (str): New column name
+            rows (list): Values for each row
+            overwrite (bool): Replace existing target column if True
+            
+        Returns:
+            None
+        """
+        raise NotImplementedError

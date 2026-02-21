@@ -1,3 +1,4 @@
+import math
 from app.models.dataset import Dataset, Row
 from app.models.filters import Filters
 
@@ -129,6 +130,222 @@ class DatasetNoLib(Dataset):
             selected_rows.append(selected_row)
 
         return selected_rows
+
+    def column_exists(self, column_name: str) -> bool:
+        """
+        Check if a column exists in the dataset
+        
+        Args:
+            column_name (str): Name of column to check
+            
+        Returns:
+            bool
+        """
+        return column_name in self._columns
+
+    def transform_create_count(self, new_column_name: str, source_column: str, seperator: str | None, overwrite: bool = False) -> None:
+        """
+        Create a count column from a source column
+        
+        Args:
+            new_column_name (str): Name of new column to create
+            source_column (str): Column to read values from
+            seperator (str | None): Seperator to split string values by
+            overwrite (bool): Replace existing target column if True
+            
+        Returns:
+            None
+        """
+        if source_column not in self._columns:
+            raise KeyError(f"Missing column: {source_column}")
+
+        source_index = self._columns.index(source_column)
+
+        counts: list[int] = []
+        for row in self.rows:
+            value = row[source_index]
+            if isinstance(value, list):
+                counts.append(len(value))
+            elif isinstance(value, str):
+                if seperator is None:
+                    raise ValueError("seperator is required for string values")
+                parts = value.split(seperator)
+                non_empty_parts = []
+                for part in parts:
+                    if part.strip():
+                        non_empty_parts.append(part)
+                counts.append(len(non_empty_parts))
+            elif value is None:
+                counts.append(0)
+            else:
+                counts.append(0)
+
+        self.create_new_column(new_column_name, counts, overwrite=overwrite)
+
+    def transform_column_combine(self, column1: str, column2: str, new_column: str, overwrite: bool = False) -> None:
+        """
+        Create a new column by adding two numeric columns
+        
+        Args:
+            column1 (str): First source column
+            column2 (str): Second source column
+            new_column (str): New column name
+            overwrite (bool): Replace existing target column if True
+            
+        Returns:
+            None
+        """
+        if column1 not in self._columns or column2 not in self._columns:
+            raise KeyError(f"Missing column: {column1} or {column2}")
+
+        left_index = self._columns.index(column1)
+        right_index = self._columns.index(column2)
+        combined_values: list[float] = []
+
+        for row in self.rows:
+            left = self._to_float(row[left_index])
+            right = self._to_float(row[right_index])
+            combined_values.append(left + right)
+
+        self.create_new_column(new_column, combined_values, overwrite=overwrite)
+
+    def transform_create_log(self, logcolumn: str, newcolumn: str, overwrite: bool = False) -> None:
+        """
+        Create a log scaled column from a source column
+        
+        Args:
+            logcolumn (str): Source column name
+            newcolumn (str): New column name
+            overwrite (bool): Replace existing target column if True
+            
+        Returns:
+            None
+        """
+        if logcolumn not in self._columns:
+            raise KeyError(f"Missing column: {logcolumn}")
+
+        source_index = self._columns.index(logcolumn)
+        output_values: list[float] = []
+
+        for row in self.rows:
+            value = self._to_float(row[source_index])
+            if value < 0:
+                value = 0.0
+            output_values.append(math.log1p(value))
+
+        self.create_new_column(newcolumn, output_values, overwrite=overwrite)
+
+    def transform_create_minmax(self, mmcolumn: str, newcolumn: str, overwrite: bool = False) -> None:
+        """
+        Create a min max scaled column from a source column
+        
+        Args:
+            mmcolumn (str): Source column name
+            newcolumn (str): New column name
+            overwrite (bool): Replace existing target column if True
+            
+        Returns:
+            None
+        """
+        if mmcolumn not in self._columns:
+            raise KeyError(f"Missing column: {mmcolumn}")
+
+        source_index = self._columns.index(mmcolumn)
+        numbers: list[float] = []
+        for row in self.rows:
+            numbers.append(self._to_float(row[source_index]))
+
+        if not numbers:
+            self.create_new_column(newcolumn, [], overwrite=overwrite)
+            return
+
+        min_value = min(numbers)
+        max_value = max(numbers)
+
+        if min_value == max_value:
+            self.create_new_column(newcolumn, [0.0] * len(numbers), overwrite=overwrite)
+            return
+
+        scaled_values: list[float] = []
+        for value in numbers:
+            scaled_values.append((value - min_value) / (max_value - min_value))
+
+        self.create_new_column(newcolumn, scaled_values, overwrite=overwrite)
+
+    def transform_create_zscore(self, scorecolumn: str, newcolumn: str, overwrite: bool = False) -> None:
+        """
+        Create a zscore column from a source column
+        
+        Args:
+            scorecolumn (str): Source column name
+            newcolumn (str): New column name
+            overwrite (bool): Replace existing target column if True
+            
+        Returns:
+            None
+        """
+        if scorecolumn not in self._columns:
+            raise KeyError(f"Missing column: {scorecolumn}")
+
+        source_index = self._columns.index(scorecolumn)
+        numbers: list[float] = []
+        for row in self.rows:
+            numbers.append(self._to_float(row[source_index]))
+
+        if not numbers:
+            self.create_new_column(newcolumn, [], overwrite=overwrite)
+            return
+
+        mean_value = sum(numbers) / len(numbers)
+
+        variance_total = 0.0
+        for value in numbers:
+            variance_total += (value - mean_value) ** 2
+        std_value = (variance_total / len(numbers)) ** 0.5
+
+        if std_value == 0:
+            self.create_new_column(newcolumn, [0.0] * len(numbers))
+            return
+
+        zscores: list[float] = []
+        for value in numbers:
+            zscores.append((value - mean_value) / std_value)
+
+        self.create_new_column(newcolumn, zscores, overwrite=overwrite)
+
+    def create_new_column(self, column_name: str, rows: list, overwrite: bool = False) -> None:
+        """
+        Create a new column from provided row values
+        
+        Args:
+            column_name (str): New column name
+            rows (list): Values for each row
+            overwrite (bool): Replace existing target column if True
+            
+        Returns:
+            None
+        """
+        if len(rows) != len(self.rows):
+            raise ValueError(f"Expected {len(self.rows)} values for new column '{column_name}'")
+
+        if self.column_exists(column_name) and not overwrite:
+            raise ValueError(f"Column already exists: {column_name}")
+
+        if self.column_exists(column_name):
+            column_index = self._columns.index(column_name)
+            for row_index, row in enumerate(self.rows):
+                row[column_index] = rows[row_index]
+            return
+
+        self._columns.append(column_name)
+        for row_index, row in enumerate(self.rows):
+            row.append(rows[row_index])
+
+    def _to_float(self, value) -> float:
+        try:
+            return float(value)
+        except (TypeError, ValueError):
+            return 0.0
 
     def search(self, search_term: str) -> DatasetNoLib:
         """

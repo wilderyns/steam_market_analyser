@@ -1,6 +1,11 @@
 from app.models.dataset import Dataset, Row
 from app.models.filters import Filters
 
+try:
+    import pandas
+except ImportError:
+    pandas = None
+
 
 class DatasetPandas(Dataset):
     """
@@ -98,19 +103,183 @@ class DatasetPandas(Dataset):
     
     def get_column_values(self, columns: list[str]) -> list[Row]:
         """
-        Takes 1 or columns and returns all the rows within those column/s
+        Takes 1 or more columns and returns all the rows within those column/s
         
         Args:
-        to_transform (str | list[str | int | bool]): The string or list to count
-        seperator (str | None): The seperator for a to_tranform given as a string
-        dataset (Dataset): The dataset where the new column will be added
-        new_column_name (str): The name of the new column to add to the dataset
+        columns (list[str]): the column names to return values of
         
         Returns:
         None
         """
         selection = self.df.loc[:, columns]
         return [list(values) for values in selection.itertuples(index=False, name=None)]
+
+    def column_exists(self, column_name: str) -> bool:
+        """
+        Check if a column exists in the dataframe
+        
+        Args:
+            column_name (str): Name of column to check
+            
+        Returns:
+            bool
+        """
+        return column_name in self.df.columns
+
+    def transform_create_count(self, new_column_name: str, source_column: str, seperator: str | None, overwrite: bool = False) -> None:
+        """
+        Create a count column from a source column
+        
+        Args:
+            new_column_name (str): Name of new column to create
+            source_column (str): Column to read values from
+            seperator (str | None): Seperator to split string values by
+            overwrite (bool): Replace existing target column if True
+            
+        Returns:
+            None
+        """
+        if source_column not in self.df.columns:
+            raise KeyError(f"Missing column: {source_column}")
+
+        counts: list[int] = []
+        for value in self.df[source_column]:
+            if isinstance(value, list):
+                counts.append(len(value))
+            elif isinstance(value, str):
+                if seperator is None:
+                    raise ValueError("seperator is required for string values")
+                parts = value.split(seperator)
+                non_empty_parts = [part for part in parts if part.strip()]
+                counts.append(len(non_empty_parts))
+            elif value is None:
+                counts.append(0)
+            else:
+                counts.append(0)
+
+        self.create_new_column(new_column_name, counts, overwrite=overwrite)
+
+    def transform_column_combine(self, column1: str, column2: str, new_column: str, overwrite: bool = False) -> None:
+        """
+        Create a new column by adding two numeric columns
+        
+        Args:
+            column1 (str): First source column
+            column2 (str): Second source column
+            new_column (str): New column name
+            overwrite (bool): Replace existing target column if True
+            
+        Returns:
+            None
+        """
+        if pandas is None:
+            raise RuntimeError("Pandas is not available.")
+
+        if column1 not in self.df.columns or column2 not in self.df.columns:
+            raise KeyError(f"Missing column: {column1} or {column2}")
+
+        left = pandas.to_numeric(self.df[column1], errors="coerce").fillna(0.0)
+        right = pandas.to_numeric(self.df[column2], errors="coerce").fillna(0.0)
+        self.create_new_column(new_column, (left + right).tolist(), overwrite=overwrite)
+
+    def transform_create_log(self, logcolumn: str, newcolumn: str, overwrite: bool = False) -> None:
+        """
+        Create a log scaled column from a source column
+        
+        Args:
+            logcolumn (str): Source column name
+            newcolumn (str): New column name
+            overwrite (bool): Replace existing target column if True
+            
+        Returns:
+            None
+        """
+        import numpy
+        if pandas is None:
+            raise RuntimeError("Pandas is not available.")
+
+        if logcolumn not in self.df.columns:
+            raise KeyError(f"Missing column: {logcolumn}")
+
+        values = pandas.to_numeric(self.df[logcolumn], errors="coerce").fillna(0.0)
+        values = values.clip(lower=0)
+        self.create_new_column(newcolumn, numpy.log1p(values).tolist(), overwrite=overwrite)
+
+    def transform_create_minmax(self, mmcolumn: str, newcolumn: str, overwrite: bool = False) -> None:
+        """
+        Create a min max scaled column from a source column
+        
+        Args:
+            mmcolumn (str): Source column name
+            newcolumn (str): New column name
+            overwrite (bool): Replace existing target column if True
+            
+        Returns:
+            None
+        """
+        if pandas is None:
+            raise RuntimeError("Pandas is not available.")
+
+        if mmcolumn not in self.df.columns:
+            raise KeyError(f"Missing column: {mmcolumn}")
+
+        values = pandas.to_numeric(self.df[mmcolumn], errors="coerce").fillna(0.0)
+        min_value = float(values.min())
+        max_value = float(values.max())
+
+        if max_value == min_value:
+            self.create_new_column(newcolumn, [0.0] * len(values), overwrite=overwrite)
+            return
+
+        scaled = (values - min_value) / (max_value - min_value)
+        self.create_new_column(newcolumn, scaled.tolist(), overwrite=overwrite)
+
+    def transform_create_zscore(self, scorecolumn: str, newcolumn: str, overwrite: bool = False) -> None:
+        """
+        Create a zscore column from a source column
+        
+        Args:
+            scorecolumn (str): Source column name
+            newcolumn (str): New column name
+            overwrite (bool): Replace existing target column if True
+            
+        Returns:
+            None
+        """
+        if pandas is None:
+            raise RuntimeError("Pandas is not available.")
+
+        if scorecolumn not in self.df.columns:
+            raise KeyError(f"Missing column: {scorecolumn}")
+
+        values = pandas.to_numeric(self.df[scorecolumn], errors="coerce").fillna(0.0)
+        mean_value = float(values.mean())
+        std_value = float(values.std(ddof=0))
+
+        if std_value == 0:
+            self.create_new_column(newcolumn, [0.0] * len(values), overwrite=overwrite)
+            return
+
+        zscores = (values - mean_value) / std_value
+        self.create_new_column(newcolumn, zscores.tolist(), overwrite=overwrite)
+
+    def create_new_column(self, column_name: str, rows: list, overwrite: bool = False) -> None:
+        """
+        Create a new column from provided row values
+        
+        Args:
+            column_name (str): New column name
+            rows (list): Values for each row
+            overwrite (bool): Replace existing target column if True
+            
+        Returns:
+            None
+        """
+        if len(rows) != len(self.df):
+            raise ValueError(f"Expected {len(self.df)} values for new column '{column_name}'")
+        if self.column_exists(column_name) and not overwrite:
+            raise ValueError(f"Column already exists: {column_name}")
+        self.df[column_name] = rows
 
     def search(self, search_term: str) -> DatasetPandas:
         """
