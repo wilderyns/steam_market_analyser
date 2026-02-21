@@ -107,19 +107,28 @@ class DatasetNoLib(Dataset):
 
     def get_column_values(self, columns: list[str]) -> list[Row]:
         """
-        Takes 1 or columns and returns all the rows within those column/s
-        
-        Args:
-        to_transform (str | list[str | int | bool]): The string or list to count
-        seperator (str | None): The seperator for a to_tranform given as a string
-        dataset (Dataset): The dataset where the new column will be added
-        new_column_name (str): The name of the new column to add to the dataset
-        
-        Returns:
-        None
+        Return row values for the requested columns.
         """
-        selection = self.df.loc[:, columns]
-        return [list(values) for values in selection.itertuples(index=False, name=None)]
+        column_positions: list[int] = []
+        missing_columns: list[str] = []
+
+        for column_name in columns:
+            if column_name in self._columns:
+                column_positions.append(self._columns.index(column_name))
+            else:
+                missing_columns.append(column_name)
+
+        if missing_columns:
+            raise KeyError(f"Columns not found: {missing_columns}")
+
+        selected_rows: list[Row] = []
+        for row in self.rows:
+            selected_row: Row = []
+            for position in column_positions:
+                selected_row.append(row[position])
+            selected_rows.append(selected_row)
+
+        return selected_rows
 
     def search(self, search_term: str) -> DatasetNoLib:
         """
