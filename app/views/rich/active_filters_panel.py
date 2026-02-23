@@ -43,9 +43,12 @@ def assemble_active_filters_panel(state: AppState):
 
 def render_active_filters_panel_rich(state: AppState, console: Console=None):
     if console is not None:
+        text = f"[bold]Active filters:[/bold] {assemble_active_filters_panel(state)}"
+        if state.transformations_applied:
+            text += "\\n[yellow]Transforms active on filtered dataset[/yellow]"
         console.print(
             Panel(
-                f"[bold]Active filters:[/bold] {assemble_active_filters_panel(state)}",
+                text,
                 border_style="cyan",
                 expand=False,
             )

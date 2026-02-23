@@ -19,4 +19,9 @@ def render_filters_menu_rich(state: AppState, console: Console) -> None:
         "[bold]0)[/bold] Back to main menu",
     ]
 
+    if state.transformations_applied:
+        lines.append("")
+        lines.append("[yellow]Transformations are active on the filtered dataset[/yellow]")
+        lines.append("[yellow]Changing filters will undo transformations[/yellow]")
+
     console.print(Panel("\n".join(lines), title="Filters Menu", border_style="cyan", expand=True))

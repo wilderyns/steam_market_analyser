@@ -27,10 +27,16 @@ class AppState:
     dataset_path: Path
     dataset_url: str = "https://www.kaggle.com/api/v1/datasets/download/fronkongames/steam-games-dataset"
     dataset: Optional[Dataset] = None
+    base_dataset: Optional[Dataset] = None
     columns: SelectedColumns = SelectedColumns()
     filters: Filters = Filters()
     last_results: Optional[Dataset] = None
     features: Features = Features()
+    transformations_applied: bool = False
+    transform_filter_note: Optional[str] = None
+    last_analysis_title: Optional[str] = None
+    last_analysis_columns: Optional[list[str]] = None
+    last_analysis_rows: Optional[list[list]] = None
     page = 1
     sug_term_width = 120
     sug_term_height = 40

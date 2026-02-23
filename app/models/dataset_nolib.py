@@ -304,7 +304,7 @@ class DatasetNoLib(Dataset):
         std_value = (variance_total / len(numbers)) ** 0.5
 
         if std_value == 0:
-            self.create_new_column(newcolumn, [0.0] * len(numbers))
+            self.create_new_column(newcolumn, [0.0] * len(numbers), overwrite=overwrite)
             return
 
         zscores: list[float] = []

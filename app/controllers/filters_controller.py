@@ -2,6 +2,7 @@ from datetime import date
 
 from app.utils.user_input_handler import expect_user_input
 from app.models.appstate import AppState
+from app.services.transformation_service import clear_transformations
 from app.views.rich.filters_menu import render_filters_menu_rich
 
 todays_date = date.today()
@@ -24,6 +25,20 @@ def filters_controller(state: AppState, console=None):
     
         if choice == 0:
             return
+
+        if state.transformations_applied and choice in [1, 2, 3, 4, 5, 6, 99]:
+            undo = expect_user_input(
+                bool,
+                None,
+                None,
+                None,
+                console,
+                "Changing filters will undo active transformations. Continue? (y/n): "
+            )
+            if not undo:
+                render_filters_menu_rich(state, console)
+                continue
+            clear_transformations(state)
         
         f = state.filters
         

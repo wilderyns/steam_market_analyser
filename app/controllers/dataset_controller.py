@@ -141,7 +141,10 @@ def view_dataset_controller(state: AppState, console, page_size: int = 20):
 
     while True:
         clear_terminal(console)
-        filtered = state.dataset.filter(state.filters)
+        if state.transformations_applied:
+            filtered = state.dataset
+        else:
+            filtered = state.dataset.filter(state.filters)
         searched = filtered.search(search_term)
         state.last_results = searched
 

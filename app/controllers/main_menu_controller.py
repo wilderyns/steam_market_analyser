@@ -1,6 +1,7 @@
 from rich.console import Console
 from app.controllers.columns_controller import columns_controller
 from app.controllers.filters_controller import filters_controller
+from app.controllers.transformation_controller import transformation_controller
 from app.controllers.dataset_controller import view_dataset_controller
 from app.models.appstate import AppState
 from app.utils.terminal import clear_terminal
@@ -26,7 +27,7 @@ def main_menu_controller(state: AppState, console=None):
     while True:
         render_main_menu_rich(state, console, error)
         
-        choice = expect_user_input(int, [1, 2, 3, 99], None, None, console)
+        choice = expect_user_input(int, [1, 2, 3, 4, 99], None, None, console)
 
         if choice == 99:
             console.print("Goodbye!")
@@ -40,5 +41,8 @@ def main_menu_controller(state: AppState, console=None):
         elif choice == 3:
             clear_terminal(console)
             columns_controller(state, console)
+        elif choice == 4:
+            clear_terminal(console)
+            transformation_controller(state, console)
     
     return True

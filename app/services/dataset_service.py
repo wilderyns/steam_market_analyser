@@ -58,13 +58,17 @@ def init_dataset(state: AppState):
     if not check_data_on_disk(state.dataset_path):
         print("Apparently data doesn't exist?")
         state.dataset = None
+        state.base_dataset = None
         state.last_results = None
         return False
     
     if state.features.has_pandas:
         try:
             state.dataset = load_pandas(state.dataset_path)
+            state.base_dataset = state.dataset
             state.last_results = state.dataset
+            state.transformations_applied = False
+            state.transform_filter_note = None
             state.columns.load_columns(state.dataset.columns())
             return True
         except Exception as e:
@@ -72,12 +76,16 @@ def init_dataset(state: AppState):
 
     try:
         state.dataset = load_nolib(state.dataset_path)
+        state.base_dataset = state.dataset
         state.columns.load_columns(state.dataset.columns())
         state.last_results = state.dataset
+        state.transformations_applied = False
+        state.transform_filter_note = None
         return True
     except Exception as e:
         print(f"Nolib load failed: {e}")
         state.dataset = None
+        state.base_dataset = None
         state.last_results = None
         return False
     
