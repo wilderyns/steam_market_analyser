@@ -122,7 +122,6 @@ The Steam Market Analyser (SMA) takes the Steam Games dataset from Kaggle and ai
 │   └── writeup.md
 ├── README.md
 ├── requirements.txt
-└── Week 5 Accompanying Video.mov
 
   
 ## Columns in dataset
