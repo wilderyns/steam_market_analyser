@@ -1,9 +1,11 @@
 from rich.console import Console
+from rich.columns import Columns
 from rich.panel import Panel
 from rich.table import Table
 
 from app.models.appstate import AppState
 from app.views.rich.active_filters_panel import render_active_filters_panel_rich
+from app.views.rich.columns_menu import create_all_columns_panel
 
 
 def render_transform_root_rich(state: AppState, console: Console, error: str | None = None) -> None:
@@ -40,7 +42,9 @@ def render_transform_root_rich(state: AppState, console: Console, error: str | N
     menu.add_row("[bold yellow]12)[/]", "Clear active transformations")
     menu.add_row("[bold]0)[/]", "Back to main menu")
 
-    console.print(Panel(menu, title="Transformations and Analysis", border_style="green", expand=False))
+    transforms_panel = Panel(menu, title="Transformations and Analysis", border_style="green", expand=False)
+    columns_panel = create_all_columns_panel(state, title="All Columns")
+    console.print(Columns([transforms_panel, columns_panel], expand=True, equal=True))
 
     if error:
         console.print(f"[red]{error}[/red]")
