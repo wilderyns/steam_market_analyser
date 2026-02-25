@@ -28,6 +28,11 @@ def render_graph_menu_rich(state: AppState, console: Console, error: str | None 
         "Select an x column and y column to generate graph image",
     ]
 
+    if state.last_analysis_columns is not None and state.last_analysis_rows is not None:
+        lines.append("[green]Last analysis table available for graphing[/green]")
+    else:
+        lines.append("[yellow]No saved analysis table yet[/yellow]")
+
     console.print(Panel("\n".join(lines), title="Graph Context", border_style="cyan", expand=True))
 
     menu = Table(show_header=False, show_edge=False, padding=(0, 1))
