@@ -23,8 +23,7 @@ class AppState:
     transformations_applied (bool): True when transformations have been applied to the active filtered dataset
     transform_filter_note (str | None): Optional note shown in UI about filter/transform state
     last_analysis_title (str | None): Title of most recent analysis output table
-    last_analysis_columns (list[str] | None): Header columns of most recent analysis output table
-    last_analysis_rows (list[list] | None): Data rows of most recent analysis output table
+    last_analysis_dataset (DatasetPandas | DatasetNoLib | None): Most recent analysis output as a dataset object
     page (int): current page selected in the dataset viewer
     sug_term_width (int): Suggestd terminal width
     sug_term_height (int): Suggested terminal height
@@ -41,8 +40,7 @@ class AppState:
     transformations_applied: bool = False
     transform_filter_note: Optional[str] = None
     last_analysis_title: Optional[str] = None
-    last_analysis_columns: Optional[list[str]] = None
-    last_analysis_rows: Optional[list[list]] = None
+    last_analysis_dataset: Optional[Dataset] = None
     page = 1
     sug_term_width = 120
     sug_term_height = 40

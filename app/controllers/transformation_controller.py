@@ -1,6 +1,8 @@
 from rich.console import Console
 
 from app.models.appstate import AppState
+from app.models.dataset_nolib import DatasetNoLib
+from app.models.dataset_pandas import DatasetPandas
 from app.services import transformation_service
 from app.utils.user_input_handler import expect_user_input
 from app.views.rich.transform_root import render_analysis_table_rich, render_transform_root_rich
@@ -46,9 +48,27 @@ def sync_state_columns(state: AppState) -> None:
 
 
 def store_analysis(state: AppState, title: str, headers: list[str], rows: list[list]) -> None:
+    """
+    Store analysis output in app state
+
+    Args:
+        state (AppState): application state controller
+        title (str): Analysis output title
+        headers (list[str]): Output headers
+        rows (list[list]): Output rows
+
+    Returns:
+        None
+    """
     state.last_analysis_title = title
-    state.last_analysis_columns = headers
-    state.last_analysis_rows = rows
+    active_dataset = state.dataset if state.dataset is not None else state.base_dataset
+    if active_dataset is not None and hasattr(active_dataset, "df"):
+        import pandas
+        dataframe = pandas.DataFrame(rows, columns=headers)
+        state.last_analysis_dataset = DatasetPandas(dataframe)
+    else:
+        copied_rows = [list(row) for row in rows]
+        state.last_analysis_dataset = DatasetNoLib(headers, copied_rows)
 
 
 def transformation_controller(state: AppState, console: Console) -> None:

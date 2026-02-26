@@ -36,7 +36,7 @@ def graph_controller(state: AppState, console=None):
 
         try:
             source_choice = 1
-            if state.last_analysis_columns is not None and state.last_analysis_rows is not None:
+            if state.last_analysis_dataset is not None:
                 source_choice = expect_user_input(
                     int,
                     [1, 2],

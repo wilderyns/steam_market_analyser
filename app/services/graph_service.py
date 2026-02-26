@@ -33,10 +33,11 @@ def get_analysis_table(state: AppState) -> tuple[list[str], list[list]]:
     Returns:
         tuple[list[str], list[list]]
     """
-    if state.last_analysis_columns is None or state.last_analysis_rows is None:
+    if state.last_analysis_dataset is None:
         raise RuntimeError("No analysis table available. Run an analysis first.")
-
-    return state.last_analysis_columns, state.last_analysis_rows
+    columns = state.last_analysis_dataset.columns()
+    rows = state.last_analysis_dataset.get_page(1, state.last_analysis_dataset.row_count())
+    return columns, rows
 
 
 def normalise_range(total_rows: int, start_row: int, end_row: int) -> tuple[int, int]:
