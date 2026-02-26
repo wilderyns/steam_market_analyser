@@ -144,9 +144,19 @@ def transformation_controller(state: AppState, console: Console) -> None:
             elif choice == 10:
                 rank_column = prompt_column(console, "Rank by column")
                 n = expect_user_input(int, None, 1, 200, console, "Top N rows: ")
-                headers, rows = transformation_service.top_n_rows(state, rank_column, n)
-                store_analysis(state, "Top N Rows", headers, rows)
-                render_analysis_table_rich(console, "Top N Rows", headers, rows)
+                with console.status("[bold]Calculating Top N rows...[/bold]"):
+                    headers, rows = transformation_service.top_n_rows(state, rank_column, n)
+                selected_headers = [name for name in state.columns.resolve() if name in headers]
+                if not selected_headers:
+                    selected_headers = headers
+
+                selected_indexes = [headers.index(name) for name in selected_headers]
+                filtered_rows: list[list] = []
+                for row in rows:
+                    filtered_rows.append([row[i] if i < len(row) else "" for i in selected_indexes])
+
+                store_analysis(state, "Top N Rows", selected_headers, filtered_rows)
+                render_analysis_table_rich(console, "Top N Rows", selected_headers, filtered_rows)
 
             elif choice == 11:
                 list_column = prompt_column(console, "String-list column")
