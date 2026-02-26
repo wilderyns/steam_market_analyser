@@ -97,3 +97,49 @@ def render_dataset_viewer_rich(state: AppState, console: Console, n: int = 20, p
         table.add_row(*out)
 
     return table
+
+
+def render_analysis_viewer_rich(console: Console, columns: list[str], rows: list[list], p: int = 1, n: int = 20, search_term: str = "", title: str = "Analysis Viewer") -> Table:
+    """
+    Render analysis rows in a paged table
+    
+    Args:
+        console (Console): Rich Console
+        columns (list[str]): Column names for the analysis table
+        rows (list[list]): Analysis rows
+        p (int): Current page
+        n (int): Rows per page
+        search_term (str): Current search term
+        title (str): Table title
+        
+    Returns:
+        Table
+    """
+    console.clear()
+
+    total_rows = len(rows)
+    total_pages = max(1, (total_rows + n - 1) // n)
+    start = max(0, (p - 1) * n)
+    end = start + n
+
+    table = Table(
+        title=f"{title} | Page {p}/{total_pages} | Rows {total_rows}" + (f" | Search: {search_term}" if search_term else ""),
+        box=box.SQUARE,
+        show_lines=True,
+        header_style="bold",
+    )
+
+    table.add_column("#", justify="right", no_wrap=True)
+    for column in columns:
+        table.add_column(column, overflow="fold")
+
+    page_rows = rows[start:end]
+    row_number = start + 1
+    for row in page_rows:
+        out = [str(row_number)]
+        for value in row:
+            out.append("" if value is None else str(value))
+        table.add_row(*out)
+        row_number += 1
+
+    return table

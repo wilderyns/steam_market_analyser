@@ -5,7 +5,7 @@ from app.models.appstate import AppState
 from app.models.dataset_nolib import DatasetNoLib
 from app.models.dataset_pandas import DatasetPandas
 from app.utils.terminal import clear_terminal
-from app.views.rich.dataset_viewer import render_dataset_viewer_rich
+from app.views.rich.dataset_viewer import render_analysis_viewer_rich, render_dataset_viewer_rich
 
 # Doing the view view logic here, should be broken into its own view 
 
@@ -138,26 +138,67 @@ def view_dataset_controller(state: AppState, console, page_size: int = 20):
     search_term = ""
     state.page = 1
     error = None
+    view_mode = "dataset"
 
     while True:
         clear_terminal(console)
-        if state.transformations_applied:
-            filtered = state.dataset
+
+        if view_mode == "dataset":
+            if state.transformations_applied:
+                filtered = state.dataset
+            else:
+                filtered = state.dataset.filter(state.filters)
+            searched = filtered.search(search_term)
+            state.last_results = searched
+
+            total_rows = searched.row_count()
+            total_pages = max(1, (total_rows + page_size - 1) // page_size)
+            if state.page > total_pages:
+                state.page = total_pages
+            if state.page < 1:
+                state.page = 1
+
+            table = render_dataset_viewer_rich(state, console, n=page_size, p=state.page, search_term=search_term)
         else:
-            filtered = state.dataset.filter(state.filters)
-        searched = filtered.search(search_term)
-        state.last_results = searched
+            if state.last_analysis_columns is None or state.last_analysis_rows is None:
+                error = "No analysis available. Run an analysis in transformations first."
+                view_mode = "dataset"
+                continue
 
-        total_rows = searched.row_count()
-        total_pages = max(1, (total_rows + page_size - 1) // page_size)
-        if state.page > total_pages:
-            state.page = total_pages
-        if state.page < 1:
-            state.page = 1
+            analysis_rows = state.last_analysis_rows
+            if search_term:
+                searched_rows = []
+                lowered = search_term.lower()
+                for row in analysis_rows:
+                    for cell in row:
+                        if lowered in str(cell).lower():
+                            searched_rows.append(row)
+                            break
+            else:
+                searched_rows = analysis_rows
 
-        table = render_dataset_viewer_rich(state, console, n=page_size, p=state.page, search_term=search_term)
+            total_rows = len(searched_rows)
+            total_pages = max(1, (total_rows + page_size - 1) // page_size)
+            if state.page > total_pages:
+                state.page = total_pages
+            if state.page < 1:
+                state.page = 1
+
+            title = state.last_analysis_title if state.last_analysis_title else "Analysis Viewer"
+            table = render_analysis_viewer_rich(
+                console,
+                state.last_analysis_columns,
+                searched_rows,
+                p=state.page,
+                n=page_size,
+                search_term=search_term,
+                title=title,
+            )
+
         console.print(table)
-        console.print("[bold]Commands:[/bold] n=next, p=prev, s=search, c=clear search, q=back")
+        mode_text = "Dataset" if view_mode == "dataset" else "Last Analysis"
+        console.print(f"[bold]Mode:[/bold] {mode_text}")
+        console.print("[bold]Commands:[/bold] n=next, p=prev, s=search, c=clear search, t=toggle dataset/analysis, q=back")
         if error:
             console.print(f"[red]{error}[/red]")
 
@@ -182,5 +223,17 @@ def view_dataset_controller(state: AppState, console, page_size: int = 20):
         elif cmd == "c":
             search_term = ""
             state.page = 1
+        elif cmd == "t":
+            if view_mode == "dataset":
+                if state.last_analysis_columns is None or state.last_analysis_rows is None:
+                    error = "No analysis available. Run one in transformations first."
+                else:
+                    view_mode = "analysis"
+                    state.page = 1
+                    search_term = ""
+            else:
+                view_mode = "dataset"
+                state.page = 1
+                search_term = ""
         else:
             error = f"{cmd if cmd else 'That input'} is an invalid option"
