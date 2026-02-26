@@ -1,7 +1,7 @@
 # Files in data directory must be ignored to meet Github max file size restrictions
 data/*.csv
 data/*.json
-
+graphs/
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[codz]
