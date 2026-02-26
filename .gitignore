@@ -2,6 +2,7 @@
 data/*.csv
 data/*.json
 graphs/
+exports/
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[codz]
