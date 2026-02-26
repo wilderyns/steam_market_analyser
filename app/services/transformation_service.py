@@ -171,7 +171,7 @@ def descriptive_statistics(state: AppState, columns: list[str]):
     return headers, rows
 
 
-def grouped_average(state: AppState, group_column: str, value_column: str):
+def grouped_average(state: AppState, group_column: str, value_column: str, seperator: str | None = None):
     dataset = active_dataset(state)
 
     values = dataset.get_column_values([group_column, value_column])
@@ -179,14 +179,22 @@ def grouped_average(state: AppState, group_column: str, value_column: str):
     counts: dict[str, int] = {}
 
     for row in values:
-        group_name = str(row[0]) if row[0] is not None else ""
         try:
             value = float(row[1])
         except (TypeError, ValueError):
             continue
 
-        totals[group_name] = totals.get(group_name, 0.0) + value
-        counts[group_name] = counts.get(group_name, 0) + 1
+        raw_group = str(row[0]) if row[0] is not None else ""
+        if seperator:
+            group_names = [name.strip() for name in raw_group.split(seperator) if name.strip()]
+            if not group_names:
+                continue
+        else:
+            group_names = [raw_group]
+
+        for group_name in group_names:
+            totals[group_name] = totals.get(group_name, 0.0) + value
+            counts[group_name] = counts.get(group_name, 0) + 1
 
     rows: list[list] = []
     for group_name in totals:

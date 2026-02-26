@@ -157,7 +157,13 @@ def transformation_controller(state: AppState, console: Console) -> None:
             elif choice == 9:
                 group_column = prompt_column(console, "Group by column")
                 value_column = prompt_column(console, "Value column for average")
-                headers, rows = transformation_service.grouped_average(state, group_column, value_column)
+                seperator = console.input("Optional split separator (leave blank for no split): ").strip()
+                headers, rows = transformation_service.grouped_average(
+                    state,
+                    group_column,
+                    value_column,
+                    seperator if seperator else None,
+                )
                 store_analysis(state, "Grouped Average", headers, rows)
                 render_analysis_table_rich(console, "Grouped Average", headers, rows)
 
