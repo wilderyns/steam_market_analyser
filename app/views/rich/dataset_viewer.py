@@ -49,6 +49,8 @@ def render_dataset_viewer_rich(state: AppState, console: Console, n: int = 20, p
         show_lines=True,  
         header_style="bold",
     )
+
+    table.add_column("#", justify="right", no_wrap=True)
     
     # Special column formatting handling, overflows and the like
     # TODO: Handle all columns that might overflow
@@ -68,8 +70,9 @@ def render_dataset_viewer_rich(state: AppState, console: Console, n: int = 20, p
     col_index = {name: index for index, name in enumerate(available_cols)}
 
     # run through the n rows in the currently selected page 
-    for row in rows:
-        out = [] #handy output buffer list
+    start_row_number = (p - 1) * n + 1
+    for row_offset, row in enumerate(rows):
+        out = [str(start_row_number + row_offset)] #handy output buffer list
         for c in cols:
             index = col_index.get(c)
             # Set the cell value to an empty string if the value is missing or out of bounds, otherwise use th value
