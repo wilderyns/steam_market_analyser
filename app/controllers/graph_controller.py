@@ -1,11 +1,8 @@
 from app.models.appstate import AppState
 from app.services.graph_service import (
     create_bar_graph,
-    create_bar_graph_from_analysis,
     create_line_graph,
-    create_line_graph_from_analysis,
     create_pie_graph,
-    create_pie_graph_from_analysis,
 )
 from app.utils.user_input_handler import expect_user_input
 from app.views.rich.graph_menu import render_graph_menu_rich
@@ -56,32 +53,22 @@ def graph_controller(state: AppState, console=None):
             if not filename:
                 filename = None
 
-            if source_choice == 1:
-                if choice == 1:
-                    output_path, point_count = create_line_graph(state, x_column, y_column, start_row, end_row, filename)
-                    console.print(f"[green]Line graph created with {point_count} points[/green]")
-                    console.print(f"Saved to: [bold]{output_path}[/bold]")
-                elif choice == 2:
-                    output_path, point_count = create_bar_graph(state, x_column, y_column, start_row, end_row, filename)
-                    console.print(f"[green]Bar graph created with {point_count} bars[/green]")
-                    console.print(f"Saved to: [bold]{output_path}[/bold]")
-                elif choice == 3:
-                    output_path, point_count = create_pie_graph(state, x_column, y_column, start_row, end_row, filename)
-                    console.print(f"[green]Pie graph created with {point_count} slices[/green]")
-                    console.print(f"Saved to: [bold]{output_path}[/bold]")
-            elif source_choice == 2:
-                if choice == 1:
-                    output_path, point_count = create_line_graph_from_analysis(state, x_column, y_column, start_row, end_row, filename)
-                    console.print(f"[green]Line graph created from analysis with {point_count} points[/green]")
-                    console.print(f"Saved to: [bold]{output_path}[/bold]")
-                elif choice == 2:
-                    output_path, point_count = create_bar_graph_from_analysis(state, x_column, y_column, start_row, end_row, filename)
-                    console.print(f"[green]Bar graph created from analysis with {point_count} bars[/green]")
-                    console.print(f"Saved to: [bold]{output_path}[/bold]")
-                elif choice == 3:
-                    output_path, point_count = create_pie_graph_from_analysis(state, x_column, y_column, start_row, end_row, filename)
-                    console.print(f"[green]Pie graph created from analysis with {point_count} slices[/green]")
-                    console.print(f"Saved to: [bold]{output_path}[/bold]")
+            source = "dataset" if source_choice == 1 else "analysis"
+            source_label = "from analysis " if source == "analysis" else ""
+
+            if choice == 1:
+                output_path, point_count = create_line_graph(state, x_column, y_column, start_row, end_row, filename, source=source)
+                console.print(f"[green]Line graph created {source_label}with {point_count} points[/green]")
+                console.print(f"Saved to: [bold]{output_path}[/bold]")
+            elif choice == 2:
+                show_values = expect_user_input(bool, None, None, None, console, "Show values on bars? (y/n): ")
+                output_path, point_count = create_bar_graph(state, x_column, y_column, start_row, end_row, filename, show_values=show_values, source=source)
+                console.print(f"[green]Bar graph created {source_label}with {point_count} bars[/green]")
+                console.print(f"Saved to: [bold]{output_path}[/bold]")
+            elif choice == 3:
+                output_path, point_count = create_pie_graph(state, x_column, y_column, start_row, end_row, filename, source=source)
+                console.print(f"[green]Pie graph created {source_label}with {point_count} slices[/green]")
+                console.print(f"Saved to: [bold]{output_path}[/bold]")
 
             console.input("\nPress Enter to continue...")
 

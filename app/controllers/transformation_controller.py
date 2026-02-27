@@ -83,7 +83,7 @@ def transformation_controller(state: AppState, console: Console) -> None:
         render_transform_root_rich(state, console, error)
         error = None
 
-        choice = expect_user_input(int, [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12], None, None, console)
+        choice = expect_user_input(int, [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13], None, None, console)
 
         if choice == 0:
             return
@@ -123,6 +123,14 @@ def transformation_controller(state: AppState, console: Console) -> None:
                 sync_state_columns(state)
 
             elif choice == 5:
+                source = prompt_column(console, "Source column")
+                default_col_name = default_name(source, "year")
+                new_column = prompt_output_column(console, default_col_name)
+                overwrite = resolve_overwrite(state, console, new_column)
+                transformation_service.transform_extract_year(state, source, new_column, overwrite=overwrite)
+                sync_state_columns(state)
+
+            elif choice == 6:
                 column1 = prompt_column(console, "Column x")
                 column2 = prompt_column(console, "Column y")
                 new_column = prompt_output_column(console, default_name(column1, "plus") + "_" + column2.lower().replace(" ", "_"))
@@ -130,7 +138,7 @@ def transformation_controller(state: AppState, console: Console) -> None:
                 transformation_service.create_sum_column(state, column1, column2, new_column, overwrite=overwrite)
                 sync_state_columns(state)
 
-            elif choice == 6:
+            elif choice == 7:
                 column_x = prompt_column(console, "Column x")
                 column_y = prompt_column(console, "Column y")
                 new_column = prompt_output_column(console, default_name(column_x, "over_sum"))
@@ -138,7 +146,7 @@ def transformation_controller(state: AppState, console: Console) -> None:
                 transformation_service.create_ratio_of_sum(state, column_x, column_y, new_column, overwrite=overwrite)
                 sync_state_columns(state)
 
-            elif choice == 7:
+            elif choice == 8:
                 column_x = prompt_column(console, "Column x")
                 column_y = prompt_column(console, "Column y")
                 column_z = prompt_column(console, "Column z")
@@ -147,14 +155,14 @@ def transformation_controller(state: AppState, console: Console) -> None:
                 transformation_service.create_composite_three_column(state, column_x, column_y, column_z, new_column, overwrite=overwrite)
                 sync_state_columns(state)
 
-            elif choice == 8:
+            elif choice == 9:
                 raw = console.input("Columns (comma separated): ").strip()
                 columns = [item.strip() for item in raw.split(",") if item.strip()]
                 headers, rows = transformation_service.descriptive_statistics(state, columns)
                 store_analysis(state, "Descriptive Statistics", headers, rows)
                 render_analysis_table_rich(console, "Descriptive Statistics", headers, rows)
 
-            elif choice == 9:
+            elif choice == 10:
                 group_column = prompt_column(console, "Group by column")
                 value_column = prompt_column(console, "Value column for average")
                 seperator = console.input("Optional split separator (leave blank for no split): ").strip()
@@ -167,24 +175,15 @@ def transformation_controller(state: AppState, console: Console) -> None:
                 store_analysis(state, "Grouped Average", headers, rows)
                 render_analysis_table_rich(console, "Grouped Average", headers, rows)
 
-            elif choice == 10:
+            elif choice == 11:
                 rank_column = prompt_column(console, "Rank by column")
                 n = expect_user_input(int, None, 1, 200, console, "Top N rows: ")
                 with console.status("[bold]Calculating Top N rows...[/bold]"):
-                    headers, rows = transformation_service.top_n_rows(state, rank_column, n)
-                selected_headers = [name for name in state.columns.resolve() if name in headers]
-                if not selected_headers:
-                    selected_headers = headers
+                    headers, rows = transformation_service.top_n_rows_selected_columns(state, rank_column, n)
+                store_analysis(state, "Top N Rows", headers, rows)
+                render_analysis_table_rich(console, "Top N Rows", headers, rows)
 
-                selected_indexes = [headers.index(name) for name in selected_headers]
-                filtered_rows: list[list] = []
-                for row in rows:
-                    filtered_rows.append([row[i] if i < len(row) else "" for i in selected_indexes])
-
-                store_analysis(state, "Top N Rows", selected_headers, filtered_rows)
-                render_analysis_table_rich(console, "Top N Rows", selected_headers, filtered_rows)
-
-            elif choice == 11:
+            elif choice == 12:
                 list_column = prompt_column(console, "String-list column")
                 seperator = console.input("Separator [,]: ").strip()
                 if not seperator:
@@ -195,7 +194,7 @@ def transformation_controller(state: AppState, console: Console) -> None:
                 store_analysis(state, "String-list Value Ranking", headers, rows)
                 render_analysis_table_rich(console, "String-list Value Ranking", headers, rows)
 
-            elif choice == 12:
+            elif choice == 13:
                 transformation_service.clear_transformations(state)
                 sync_state_columns(state)
                 console.print("[green]Transformations cleared and base dataset restored[/green]")

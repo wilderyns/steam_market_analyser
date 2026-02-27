@@ -167,6 +167,20 @@ class Dataset:
             None
         """
         raise NotImplementedError
+
+    def transform_extract_year(self, source_column: str, new_column: str, overwrite: bool = False) -> None:
+        """
+        Extract a 4-digit year from a source column into a new column
+        
+        Args:
+            source_column (str): Source column name
+            new_column (str): New column name
+            overwrite (bool): Replace existing target column if True
+            
+        Returns:
+            None
+        """
+        raise NotImplementedError
     
     def create_new_column(self, column_name: str, rows: list, overwrite: bool = False) -> None:
         """

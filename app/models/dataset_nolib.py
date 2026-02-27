@@ -313,6 +313,35 @@ class DatasetNoLib(Dataset):
 
         self.create_new_column(newcolumn, zscores, overwrite=overwrite)
 
+    def transform_extract_year(self, source_column: str, new_column: str, overwrite: bool = False) -> None:
+        """
+        Extract a 4-digit year from a source column into a new column
+        
+        Args:
+            source_column (str): Source column name
+            new_column (str): New column name
+            overwrite (bool): Replace existing target column if True
+            
+        Returns:
+            None
+        """
+        if source_column not in self._columns:
+            raise KeyError(f"Missing column: {source_column}")
+
+        source_index = self._columns.index(source_column)
+        years: list[str] = []
+
+        for row in self.rows:
+            value = str(row[source_index]) if row[source_index] is not None else ""
+            year = ""
+            for part in value.replace(",", " ").split():
+                if len(part) == 4 and part.isdigit():
+                    year = part
+                    break
+            years.append(year)
+
+        self.create_new_column(new_column, years, overwrite=overwrite)
+
     def create_new_column(self, column_name: str, rows: list, overwrite: bool = False) -> None:
         """
         Create a new column from provided row values

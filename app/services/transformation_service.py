@@ -77,6 +77,11 @@ def transform_create_zscore(state: AppState, source_column: str, new_column: str
     dataset.transform_create_zscore(source_column, new_column, overwrite=overwrite)
 
 
+def transform_extract_year(state: AppState, source_column: str, new_column: str, overwrite: bool = False) -> None:
+    dataset = ensure_transform_dataset(state)
+    dataset.transform_extract_year(source_column, new_column, overwrite=overwrite)
+
+
 def create_sum_column(state: AppState, column1: str, column2: str, new_column: str, overwrite: bool = False) -> None:
     dataset = ensure_transform_dataset(state)
     dataset.transform_column_combine(column1, column2, new_column, overwrite=overwrite)
@@ -222,13 +227,27 @@ def top_n_rows(state: AppState, rank_column: str, n: int):
     indexed.sort(key=lambda x: x[1], reverse=True)
     top_indexes = [i for i, _ in indexed[:n]]
 
-    full_rows = dataset.get_page(1, dataset.row_count())
+    full_rows = dataset.get_column_values(all_columns)
     output_rows: list[list] = []
     for idx in top_indexes:
         if idx < len(full_rows):
             output_rows.append(full_rows[idx])
 
     return all_columns, output_rows
+
+
+def top_n_rows_selected_columns(state: AppState, rank_column: str, n: int):
+    headers, rows = top_n_rows(state, rank_column, n)
+    selected_headers = [name for name in state.columns.resolve() if name in headers]
+    if not selected_headers:
+        selected_headers = headers
+
+    selected_indexes = [headers.index(name) for name in selected_headers]
+    filtered_rows: list[list] = []
+    for row in rows:
+        filtered_rows.append([row[i] if i < len(row) else "" for i in selected_indexes])
+
+    return selected_headers, filtered_rows
 
 
 def string_list_value_ranking(state: AppState, list_column: str, seperator: str, top_n: int, score_column: str | None = None):

@@ -263,6 +263,27 @@ class DatasetPandas(Dataset):
         zscores = (values - mean_value) / std_value
         self.create_new_column(newcolumn, zscores.tolist(), overwrite=overwrite)
 
+    def transform_extract_year(self, source_column: str, new_column: str, overwrite: bool = False) -> None:
+        """
+        Extract a 4-digit year from a source column into a new column
+        
+        Args:
+            source_column (str): Source column name
+            new_column (str): New column name
+            overwrite (bool): Replace existing target column if True
+            
+        Returns:
+            None
+        """
+        if pandas is None:
+            raise RuntimeError("Pandas is not available.")
+
+        if source_column not in self.df.columns:
+            raise KeyError(f"Missing column: {source_column}")
+
+        extracted = self.df[source_column].astype(str).str.extract(r"(\d{4})", expand=False).fillna("")
+        self.create_new_column(new_column, extracted.tolist(), overwrite=overwrite)
+
     def create_new_column(self, column_name: str, rows: list, overwrite: bool = False) -> None:
         """
         Create a new column from provided row values

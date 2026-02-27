@@ -4,6 +4,14 @@ from datetime import datetime
 from app.models.appstate import AppState
 
 
+def get_pyplot():
+    import matplotlib
+    matplotlib.use("Agg")
+    import matplotlib.pyplot as plt
+    plt.ioff()
+    return plt
+
+
 def get_graph_dataset(state: AppState):
     """
     Return dataset to use for graph creation
@@ -98,7 +106,7 @@ def create_output_path(filename: str | None) -> Path:
     return graphs_dir / filename
 
 
-def build_graph_series(state: AppState, x_column: str, y_column: str, start_row: int, end_row: int):
+def build_graph_series(state: AppState, x_column: str, y_column: str, start_row: int, end_row: int, source: str = "dataset"):
     """
     Build x and y values for graphing
 
@@ -112,54 +120,19 @@ def build_graph_series(state: AppState, x_column: str, y_column: str, start_row:
     Returns:
         tuple[list, list]: x_values, y_values
     """
-    dataset = get_graph_dataset(state)
-    rows = dataset.get_column_values([x_column, y_column])
-
-    start_index, end_index = normalise_range(len(rows), start_row, end_row)
-    selected = rows[start_index:end_index]
-
-    x_values: list = []
-    y_values: list[float] = []
-
-    for row in selected:
-        x_value = row[0]
-        y_value = row[1]
-
-        try:
-            y_number = float(y_value)
-        except (TypeError, ValueError):
-            continue
-
-        x_values.append(x_value)
-        y_values.append(y_number)
-
-    if not y_values:
-        raise ValueError("No numeric data found in selected range")
-
-    return x_values, y_values
-
-
-def build_analysis_graph_series(state: AppState, x_column: str, y_column: str, start_row: int, end_row: int):
-    """
-    Build x and y values for graphing from last analysis table
-
-    Args:
-        state (AppState): application state controller
-        x_column (str): Column name to use on x axis
-        y_column (str): Column name to use on y axis
-        start_row (int): Start row (1-based), use 0 for first row
-        end_row (int): End row (1-based), use 0 for last row
-
-    Returns:
-        tuple[list, list]: x_values, y_values
-    """
-    headers, rows = get_analysis_table(state)
-
-    if x_column not in headers or y_column not in headers:
-        raise KeyError("Analysis column not found")
-
-    x_index = headers.index(x_column)
-    y_index = headers.index(y_column)
+    if source == "dataset":
+        dataset = get_graph_dataset(state)
+        rows = dataset.get_column_values([x_column, y_column])
+        x_index = 0
+        y_index = 1
+    elif source == "analysis":
+        headers, rows = get_analysis_table(state)
+        if x_column not in headers or y_column not in headers:
+            raise KeyError("Analysis column not found")
+        x_index = headers.index(x_column)
+        y_index = headers.index(y_column)
+    else:
+        raise ValueError("source must be 'dataset' or 'analysis'")
 
     start_index, end_index = normalise_range(len(rows), start_row, end_row)
     selected = rows[start_index:end_index]
@@ -183,12 +156,43 @@ def build_analysis_graph_series(state: AppState, x_column: str, y_column: str, s
         y_values.append(y_number)
 
     if not y_values:
-        raise ValueError("No numeric data found in selected analysis range")
+        raise ValueError("No numeric data found in selected range")
 
     return x_values, y_values
 
 
-def create_line_graph(state: AppState, x_column: str, y_column: str, start_row: int, end_row: int, filename: str | None = None):
+def plot_line_values(plt, x_values: list, y_values: list[float]) -> None:
+    """
+    Plot line values and handle string labels safely
+
+    Args:
+        plt: matplotlib pyplot module
+        x_values (list): x axis values
+        y_values (list[float]): y axis values
+
+    Returns:
+        None
+    """
+    numeric_x: list[float] = []
+    all_numeric = True
+    for value in x_values:
+        try:
+            numeric_x.append(float(value))
+        except (TypeError, ValueError):
+            all_numeric = False
+            break
+
+    if all_numeric:
+        plt.plot(numeric_x, y_values, marker="o", linewidth=1.5)
+        return
+
+    positions = list(range(len(y_values)))
+    labels = [str(value) for value in x_values]
+    plt.plot(positions, y_values, marker="o", linewidth=1.5)
+    plt.xticks(positions, labels, rotation=45, ha="right")
+
+
+def create_line_graph(state: AppState, x_column: str, y_column: str, start_row: int, end_row: int, filename: str | None = None, source: str = "dataset"):
     """
     Create and save a line graph from selected columns
 
@@ -199,6 +203,7 @@ def create_line_graph(state: AppState, x_column: str, y_column: str, start_row: 
         start_row (int): Start row (1-based), use 0 for first row
         end_row (int): End row (1-based), use 0 for last row
         filename (str | None): Optional output filename
+        source (str): dataset or analysis
 
     Returns:
         tuple[Path, int]: output path and point count
@@ -206,17 +211,16 @@ def create_line_graph(state: AppState, x_column: str, y_column: str, start_row: 
     if not state.features.has_matplotlib:
         raise RuntimeError("Matplotlib is required for graph creation")
 
-    import matplotlib.pyplot as plt
+    plt = get_pyplot()
 
-    x_values, y_values = build_graph_series(state, x_column, y_column, start_row, end_row)
+    x_values, y_values = build_graph_series(state, x_column, y_column, start_row, end_row, source=source)
     output_path = create_output_path(filename)
 
     plt.figure(figsize=(10, 5))
-    plt.plot(x_values, y_values, marker="o", linewidth=1.5)
+    plot_line_values(plt, x_values, y_values)
     plt.xlabel(x_column)
     plt.ylabel(y_column)
     plt.title(f"{y_column} vs {x_column}")
-    plt.xticks(rotation=45, ha="right")
     plt.tight_layout()
     plt.savefig(output_path)
     plt.close()
@@ -224,7 +228,7 @@ def create_line_graph(state: AppState, x_column: str, y_column: str, start_row: 
     return output_path, len(y_values)
 
 
-def create_bar_graph(state: AppState, x_column: str, y_column: str, start_row: int, end_row: int, filename: str | None = None):
+def create_bar_graph(state: AppState, x_column: str, y_column: str, start_row: int, end_row: int, filename: str | None = None, show_values: bool = False, source: str = "dataset"):
     """
     Create and save a bar graph from selected columns
 
@@ -235,6 +239,8 @@ def create_bar_graph(state: AppState, x_column: str, y_column: str, start_row: i
         start_row (int): Start row (1-based), use 0 for first row
         end_row (int): End row (1-based), use 0 for last row
         filename (str | None): Optional output filename
+        show_values (bool): Show numeric values above each bar
+        source (str): dataset or analysis
 
     Returns:
         tuple[Path, int]: output path and bar count
@@ -242,13 +248,18 @@ def create_bar_graph(state: AppState, x_column: str, y_column: str, start_row: i
     if not state.features.has_matplotlib:
         raise RuntimeError("Matplotlib is required for graph creation")
 
-    import matplotlib.pyplot as plt
+    plt = get_pyplot()
 
-    x_values, y_values = build_graph_series(state, x_column, y_column, start_row, end_row)
+    x_values, y_values = build_graph_series(state, x_column, y_column, start_row, end_row, source=source)
     output_path = create_output_path(filename)
 
     plt.figure(figsize=(10, 5))
-    plt.bar(x_values, y_values)
+    bars = plt.bar(x_values, y_values)
+    if show_values:
+        for bar, value in zip(bars, y_values):
+            x = bar.get_x() + bar.get_width() / 2
+            y = bar.get_height()
+            plt.text(x, y, str(round(value, 4)), ha="center", va="bottom", fontsize=8)
     plt.xlabel(x_column)
     plt.ylabel(y_column)
     plt.title(f"{y_column} by {x_column}")
@@ -260,7 +271,7 @@ def create_bar_graph(state: AppState, x_column: str, y_column: str, start_row: i
     return output_path, len(y_values)
 
 
-def create_pie_graph(state: AppState, x_column: str, y_column: str, start_row: int, end_row: int, filename: str | None = None):
+def create_pie_graph(state: AppState, x_column: str, y_column: str, start_row: int, end_row: int, filename: str | None = None, source: str = "dataset"):
     """
     Create and save a pie graph from selected columns
 
@@ -271,6 +282,7 @@ def create_pie_graph(state: AppState, x_column: str, y_column: str, start_row: i
         start_row (int): Start row (1-based), use 0 for first row
         end_row (int): End row (1-based), use 0 for last row
         filename (str | None): Optional output filename
+        source (str): dataset or analysis
 
     Returns:
         tuple[Path, int]: output path and slice count
@@ -278,115 +290,9 @@ def create_pie_graph(state: AppState, x_column: str, y_column: str, start_row: i
     if not state.features.has_matplotlib:
         raise RuntimeError("Matplotlib is required for graph creation")
 
-    import matplotlib.pyplot as plt
+    plt = get_pyplot()
 
-    x_values, y_values = build_graph_series(state, x_column, y_column, start_row, end_row)
-    output_path = create_output_path(filename)
-
-    labels = [str(value) for value in x_values]
-    plt.figure(figsize=(8, 8))
-    plt.pie(y_values, labels=labels, autopct="%1.1f%%", startangle=90)
-    plt.title(f"{y_column} share by {x_column}")
-    plt.tight_layout()
-    plt.savefig(output_path)
-    plt.close()
-
-    return output_path, len(y_values)
-
-
-def create_line_graph_from_analysis(state: AppState, x_column: str, y_column: str, start_row: int, end_row: int, filename: str | None = None):
-    """
-    Create and save a line graph from last analysis table
-
-    Args:
-        state (AppState): application state controller
-        x_column (str): Column name to use on x axis
-        y_column (str): Column name to use on y axis
-        start_row (int): Start row (1-based), use 0 for first row
-        end_row (int): End row (1-based), use 0 for last row
-        filename (str | None): Optional output filename
-
-    Returns:
-        tuple[Path, int]: output path and point count
-    """
-    if not state.features.has_matplotlib:
-        raise RuntimeError("Matplotlib is required for graph creation")
-
-    import matplotlib.pyplot as plt
-
-    x_values, y_values = build_analysis_graph_series(state, x_column, y_column, start_row, end_row)
-    output_path = create_output_path(filename)
-
-    plt.figure(figsize=(10, 5))
-    plt.plot(x_values, y_values, marker="o", linewidth=1.5)
-    plt.xlabel(x_column)
-    plt.ylabel(y_column)
-    plt.title(f"{y_column} vs {x_column}")
-    plt.xticks(rotation=45, ha="right")
-    plt.tight_layout()
-    plt.savefig(output_path)
-    plt.close()
-
-    return output_path, len(y_values)
-
-
-def create_bar_graph_from_analysis(state: AppState, x_column: str, y_column: str, start_row: int, end_row: int, filename: str | None = None):
-    """
-    Create and save a bar graph from last analysis table
-
-    Args:
-        state (AppState): application state controller
-        x_column (str): Column name to use on x axis
-        y_column (str): Column name to use on y axis
-        start_row (int): Start row (1-based), use 0 for first row
-        end_row (int): End row (1-based), use 0 for last row
-        filename (str | None): Optional output filename
-
-    Returns:
-        tuple[Path, int]: output path and bar count
-    """
-    if not state.features.has_matplotlib:
-        raise RuntimeError("Matplotlib is required for graph creation")
-
-    import matplotlib.pyplot as plt
-
-    x_values, y_values = build_analysis_graph_series(state, x_column, y_column, start_row, end_row)
-    output_path = create_output_path(filename)
-
-    plt.figure(figsize=(10, 5))
-    plt.bar(x_values, y_values)
-    plt.xlabel(x_column)
-    plt.ylabel(y_column)
-    plt.title(f"{y_column} by {x_column}")
-    plt.xticks(rotation=45, ha="right")
-    plt.tight_layout()
-    plt.savefig(output_path)
-    plt.close()
-
-    return output_path, len(y_values)
-
-
-def create_pie_graph_from_analysis(state: AppState, x_column: str, y_column: str, start_row: int, end_row: int, filename: str | None = None):
-    """
-    Create and save a pie graph from last analysis table
-
-    Args:
-        state (AppState): application state controller
-        x_column (str): Column name to use as labels
-        y_column (str): Column name to use as values
-        start_row (int): Start row (1-based), use 0 for first row
-        end_row (int): End row (1-based), use 0 for last row
-        filename (str | None): Optional output filename
-
-    Returns:
-        tuple[Path, int]: output path and slice count
-    """
-    if not state.features.has_matplotlib:
-        raise RuntimeError("Matplotlib is required for graph creation")
-
-    import matplotlib.pyplot as plt
-
-    x_values, y_values = build_analysis_graph_series(state, x_column, y_column, start_row, end_row)
+    x_values, y_values = build_graph_series(state, x_column, y_column, start_row, end_row, source=source)
     output_path = create_output_path(filename)
 
     labels = [str(value) for value in x_values]
