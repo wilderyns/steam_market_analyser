@@ -260,6 +260,40 @@ def create_bar_graph(state: AppState, x_column: str, y_column: str, start_row: i
     return output_path, len(y_values)
 
 
+def create_pie_graph(state: AppState, x_column: str, y_column: str, start_row: int, end_row: int, filename: str | None = None):
+    """
+    Create and save a pie graph from selected columns
+
+    Args:
+        state (AppState): application state controller
+        x_column (str): Column name to use as labels
+        y_column (str): Column name to use as values
+        start_row (int): Start row (1-based), use 0 for first row
+        end_row (int): End row (1-based), use 0 for last row
+        filename (str | None): Optional output filename
+
+    Returns:
+        tuple[Path, int]: output path and slice count
+    """
+    if not state.features.has_matplotlib:
+        raise RuntimeError("Matplotlib is required for graph creation")
+
+    import matplotlib.pyplot as plt
+
+    x_values, y_values = build_graph_series(state, x_column, y_column, start_row, end_row)
+    output_path = create_output_path(filename)
+
+    labels = [str(value) for value in x_values]
+    plt.figure(figsize=(8, 8))
+    plt.pie(y_values, labels=labels, autopct="%1.1f%%", startangle=90)
+    plt.title(f"{y_column} share by {x_column}")
+    plt.tight_layout()
+    plt.savefig(output_path)
+    plt.close()
+
+    return output_path, len(y_values)
+
+
 def create_line_graph_from_analysis(state: AppState, x_column: str, y_column: str, start_row: int, end_row: int, filename: str | None = None):
     """
     Create and save a line graph from last analysis table
@@ -325,6 +359,40 @@ def create_bar_graph_from_analysis(state: AppState, x_column: str, y_column: str
     plt.ylabel(y_column)
     plt.title(f"{y_column} by {x_column}")
     plt.xticks(rotation=45, ha="right")
+    plt.tight_layout()
+    plt.savefig(output_path)
+    plt.close()
+
+    return output_path, len(y_values)
+
+
+def create_pie_graph_from_analysis(state: AppState, x_column: str, y_column: str, start_row: int, end_row: int, filename: str | None = None):
+    """
+    Create and save a pie graph from last analysis table
+
+    Args:
+        state (AppState): application state controller
+        x_column (str): Column name to use as labels
+        y_column (str): Column name to use as values
+        start_row (int): Start row (1-based), use 0 for first row
+        end_row (int): End row (1-based), use 0 for last row
+        filename (str | None): Optional output filename
+
+    Returns:
+        tuple[Path, int]: output path and slice count
+    """
+    if not state.features.has_matplotlib:
+        raise RuntimeError("Matplotlib is required for graph creation")
+
+    import matplotlib.pyplot as plt
+
+    x_values, y_values = build_analysis_graph_series(state, x_column, y_column, start_row, end_row)
+    output_path = create_output_path(filename)
+
+    labels = [str(value) for value in x_values]
+    plt.figure(figsize=(8, 8))
+    plt.pie(y_values, labels=labels, autopct="%1.1f%%", startangle=90)
+    plt.title(f"{y_column} share by {x_column}")
     plt.tight_layout()
     plt.savefig(output_path)
     plt.close()

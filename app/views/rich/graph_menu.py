@@ -38,6 +38,7 @@ def render_graph_menu_rich(state: AppState, console: Console, error: str | None 
     menu = Table(show_header=False, show_edge=False, padding=(0, 1))
     menu.add_row("[bold cyan]1)[/]", "Create line graph")
     menu.add_row("[bold cyan]2)[/]", "Create bar graph")
+    menu.add_row("[bold cyan]3)[/]", "Create pie graph")
     menu.add_row("[bold]0)[/]", "Back to main menu")
 
     menu_panel = Panel(menu, title="Graph Menu", border_style="green", expand=False)
