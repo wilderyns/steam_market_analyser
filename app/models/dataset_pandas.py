@@ -30,8 +30,6 @@ class DatasetPandas(Dataset):
         return int(len(self.df))
 
     def filter(self, filters: Filters) -> "DatasetPandas":
-        import pandas
-
         dataframe = self.df
 
         # All these filter conditions essentially do the same thing 

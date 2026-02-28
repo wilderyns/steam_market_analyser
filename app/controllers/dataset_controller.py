@@ -2,8 +2,6 @@ from rich.panel import Panel
 
 from app.services.dataset_service import attempt_data_download, init_dataset 
 from app.models.appstate import AppState
-from app.models.dataset_nolib import DatasetNoLib
-from app.models.dataset_pandas import DatasetPandas
 from app.utils.terminal import clear_terminal
 from app.views.rich.dataset_viewer import render_analysis_viewer_rich, render_dataset_viewer_rich
 

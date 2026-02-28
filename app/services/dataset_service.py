@@ -4,6 +4,7 @@ from pathlib import Path
 import zipfile
 import csv 
 from app.models.appstate import AppState
+from app.models.dataset import Dataset
 from app.models.dataset_nolib import DatasetNoLib
 from app.models.dataset_pandas import DatasetPandas
 
@@ -91,9 +92,11 @@ def init_dataset(state: AppState):
         state.last_results = None
         return False
     
+    columns, rows = read_csv(state.dataset_path)
+    
     if state.features.has_pandas:
         try:
-            state.dataset = load_pandas(state.dataset_path)
+            state.dataset = factory_create_dataset(state, rows, columns, backend="pandas")
             state.base_dataset = state.dataset
             state.last_results = state.dataset
             state.transformations_applied = False
@@ -104,7 +107,7 @@ def init_dataset(state: AppState):
             print(f"Pandas load failed: {e}")
 
     try:
-        state.dataset = load_nolib(state.dataset_path)
+        state.dataset = factory_create_dataset(state, rows, columns, backend="nolib")
         state.base_dataset = state.dataset
         state.columns.load_columns(state.dataset.columns())
         state.last_results = state.dataset
@@ -118,34 +121,40 @@ def init_dataset(state: AppState):
         state.last_results = None
         return False
     
-def load_pandas(path: Path) -> DatasetPandas:
+def factory_create_dataset(
+    state: AppState,
+    rows: list[list],
+    columns: list[str],
+    backend: str | None = None,
+) -> Dataset:
     """
-    Read dataset csv and load into pandas dataframe 
+    Create a dataset instance using the active backend or an explicit override.
     
-    Args:
-        path (Path): Dataset path
-        
-    Returns:
-        DatasetPandas: (DataFrame) create a new instance of a pandas dataframe
-    """
-    import pandas
-    columns, rows = read_csv(path)
-    dataframe = pandas.DataFrame(rows, columns=columns)
-    return DatasetPandas(dataframe)
-
-def load_nolib(path: Path) -> DatasetNoLib:
-    """
-    Read dataset csv and load into a standard library dataset (DatasetNoLib) 
+    Args: 
+        state (AppState): app state used to detect optional feature availability
+        rows (list[list]): data rows
+        columns (list[str]): a list of column headers
+        backend (str | None): optional backend override ("pandas" or "nolib")
     
-    Args:
-        path (Path): Dataset path
-        
     Returns:
-        DatasetNoLib: (columns: list[str], rows: list[str]) create a new instance of our own dataset passing in our column headers and data rows
-    """
-    columns, rows = read_csv(path)
-    return DatasetNoLib(columns, rows)
+        Dataset: DatasetPandas or DatasetNoLib depending on selected backend
 
+    """
+    copied_rows = [list(row) for row in rows]
+
+    selected_backend = backend
+    if selected_backend is None:
+        selected_backend = "pandas" if state.features.has_pandas else "nolib"
+
+    if selected_backend == "pandas":
+        import pandas
+        df = pandas.DataFrame(copied_rows, columns=columns)
+        return DatasetPandas(df)
+    if selected_backend == "nolib":
+        return DatasetNoLib(columns, copied_rows)
+
+    raise ValueError(f"Unknown backend: {selected_backend}")
+    
 def check_data_on_disk(path: Path):
     """
     Simply check a passed path exists

@@ -1,8 +1,7 @@
 from rich.console import Console
 
 from app.models.appstate import AppState
-from app.models.dataset_nolib import DatasetNoLib
-from app.models.dataset_pandas import DatasetPandas
+from app.services.dataset_service import factory_create_dataset
 from app.services import transformation_service
 from app.utils.user_input_handler import expect_user_input
 from app.views.rich.transform_root import render_analysis_table_rich, render_transform_root_rich
@@ -62,13 +61,8 @@ def store_analysis(state: AppState, title: str, headers: list[str], rows: list[l
     """
     state.last_analysis_title = title
     active_dataset = state.dataset if state.dataset is not None else state.base_dataset
-    if active_dataset is not None and hasattr(active_dataset, "df"):
-        import pandas
-        dataframe = pandas.DataFrame(rows, columns=headers)
-        state.last_analysis_dataset = DatasetPandas(dataframe)
-    else:
-        copied_rows = [list(row) for row in rows]
-        state.last_analysis_dataset = DatasetNoLib(headers, copied_rows)
+    backend = "pandas" if state.features.has_pandas else "nolib"
+    state.last_analysis_dataset = factory_create_dataset(state, rows, headers, backend=backend)
 
 
 def transformation_controller(state: AppState, console: Console) -> None:
