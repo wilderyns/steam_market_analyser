@@ -10,6 +10,8 @@ from app.models.dataset_pandas import DatasetPandas
 def read_csv(path: Path):
     """
     Read CSV at specified path and return the column headers and the rows of data
+    Implements 2 fixes to the dataset, splitting the Discounts and DLC column names
+    And dedupes the dataset - removes multiple Name entries
     
     Args:
         path (Path): The path to the csv file
@@ -28,7 +30,7 @@ def read_csv(path: Path):
     # Row 0 has the column header
     columns = rows[0]
     
-    #Row 1 onwards are fully of quality data
+    #Row 1 onwards are fully of data
     data_rows = rows[1:]
 
     # The dataset I downloaded here is broken, with the Discount and DLC count columns not being seperated, becoming "DiscountDLC Count".
@@ -37,6 +39,33 @@ def read_csv(path: Path):
         if len(data_rows[0]) == len(columns) + 1:
             i = columns.index("DiscountDLC count")
             columns = columns[:i] + ["Discount", "DLC count"] + columns[i + 1:]
+
+    # The dataset contains some weird duplicate rows with the same game and all its statistics but different AppIDs. 
+    # Let's just remove the duplicates for now.
+    # TODO: Handle this properly, maybe prompt the user about what they'd like to do?
+    
+    if "Name" in columns:
+        name_index = columns.index("Name")
+        seen_names: set[str] = set()
+        deduped_rows: list[list[str]] = []
+
+        for row in data_rows:
+            if name_index >= len(row):
+                deduped_rows.append(row)
+                continue
+
+            game_name = str(row[name_index]).strip()
+            if not game_name:
+                deduped_rows.append(row)
+                continue
+
+            if game_name in seen_names:
+                continue
+
+            seen_names.add(game_name)
+            deduped_rows.append(row)
+
+        data_rows = deduped_rows
 
     return columns, data_rows
 
