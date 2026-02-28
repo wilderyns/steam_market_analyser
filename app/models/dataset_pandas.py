@@ -6,6 +6,11 @@ try:
 except ImportError:
     pandas = None
 
+try:
+    import numpy
+except ImportError:
+    numpy = None
+
 
 class DatasetPandas(Dataset):
     """
@@ -194,7 +199,9 @@ class DatasetPandas(Dataset):
         Returns:
             None
         """
-        import numpy
+        
+        if numpy is None:
+             raise RuntimeError("Numpy is not available.")
         if pandas is None:
             raise RuntimeError("Pandas is not available.")
 
