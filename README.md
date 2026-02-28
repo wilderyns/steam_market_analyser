@@ -10,6 +10,8 @@ The Steam Market Analyser (SMA) takes the Steam Games dataset from Kaggle and ai
 
 One can then use a suite of transformation and analysis functions to perform analyses on the dataset and from this produce new data or graphs.
 
+Developed by Al Wilde for the HSC501 unit at Abertay University. 
+
 ## Setup and Use
 
 ### 1. Get SMA
