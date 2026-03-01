@@ -1,0 +1,2429 @@
+
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+<meta charset="UTF-8" />
+<title>Project Commit Log</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+<style>
+  :root {
+    --btn-bg: #e0e0e0;
+    --btn-fg: #111;
+    --link: #d6336c;
+
+    --bg: #fff;
+    --fg: #111;
+    --link-hover: #9b1c3a;
+    --border: #ccc;
+    --iso-color: #0d6efd;
+    --iso-bg: rgba(13,110,253,0.1);
+    --rel-color: #32cd32;
+    --subject-color-light: #1e88e5;
+    --body-color-light: #388e3c;
+    --btn-hover: #cfcfcf;
+    --timestamp-bg: rgba(50,50,50,0.7);
+    --timestamp-fg: #ccc;
+    --ts-label: #f8f8f2;
+    --iso-ts-color: #39d7f1;
+    --iso-ts-bg: rgba(57,215,241,0.15);
+    --local-ts-color: #b3e88f;
+    --local-ts-bg: rgba(179,232,143,0.15);
+    --subject-color: var(--subject-color-light);
+    --body-color: var(--body-color-light);
+
+    /* New Title Colors */
+    --title-bg-start: #3f51b5; /* Indigo */
+    --title-bg-end: #2196f3;   /* Blue */
+    --title-fg: #ffffff;
+    --title-shadow-light: rgba(0, 0, 0, 0.15);
+    --title-shadow-dark: rgba(0, 0, 0, 0.3);
+
+    /* Status Colors - Light Mode (Updated for better contrast) */
+    --status-local-bg: #e6ffe6; /* Light Green */
+    --status-local-fg: #006400; /* Dark Green */
+    --status-pushed-bg: #e0f2ff; /* Light Blue */
+    --status-pushed-fg: #0056b3; /* Dark Blue */
+    --status-not-pushed-bg: #fff0f0; /* Light Red */
+    --status-not-pushed-fg: #d32f2f; /* Dark Red */
+    --status-not-in-local-bg: #fff8e1; /* Light Orange */
+    --status-not-in-local-fg: #ffa000; /* Dark Orange */
+    --status-fetched-remote-bg: #f3e5f5; /* Light Purple */
+    --status-fetched-remote-fg: #673ab7; /* Dark Purple */
+    --status-unknown-bg: #f0f0f0; /* Light Gray */
+    --status-unknown-fg: #555555; /* Dark Gray */
+  }
+  html.dark {
+    --btn-bg: #222;
+    --btn-fg: #eee;
+    --link: #ff6c6b;
+
+    --bg: #111;
+    --fg: #eee;
+    --link-hover: #3b82f6;
+    --border: #444;
+    --iso-color: #61dafb;
+    --iso-bg: rgba(97,218,251,0.1);
+    --rel-color: #32cd32;
+    --subject-color-dark: #90caf9;
+    --body-color-dark: #a5d6a7;
+    --btn-hover: #333;
+    --subject-color: var(--subject-color-dark);
+    --body-color: var(--body-color-dark);
+
+    /* New Title Colors for Dark Mode */
+    --title-bg-start: #1a237e; /* Darker Indigo */
+    --title-bg-end: #0d47a1;   /* Darker Blue */
+    --title-fg: #e0e0e0;
+
+    /* Status Colors - Dark Mode (Updated for better contrast) */
+    --status-local-bg: #1a4f1a; /* Darker Green */
+    --status-local-fg: #90ee90; /* Light Green */
+    --status-pushed-bg: #1a3a4f; /* Darker Blue */
+    --status-pushed-fg: #87cefa; /* Light Blue */
+    --status-not-pushed-bg: #4f1a1a; /* Darker Red */
+    --status-not-pushed-fg: #ef9a9a; /* Light Red */
+    --status-not-in-local-bg: #4f3a1a; /* Darker Orange */
+    --status-not-in-local-fg: #ffcc80; /* Light Orange */
+    --status-fetched-remote-bg: #3a1a4f; /* Darker Purple */
+    --status-fetched-remote-fg: #d1c4e9; /* Light Purple */
+    --status-unknown-bg: #333333; /* Darker Gray */
+    --status-unknown-fg: #cccccc; /* Light Gray */
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--fg);
+    font-family: monospace;
+    padding: 0;
+    margin: 0;
+    white-space: pre-wrap;
+  }
+  a.commit-link {
+    color: var(--link);
+    font-weight: bold;
+    text-decoration: none;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+  a.commit-link:hover { color: var(--link-hover); }
+
+  /* New wrapper to constrain and center all main content blocks */
+  .page-container {
+    max-width: 1200px; /* Adjust this value to your desired max content width */
+    margin: 0 auto;    /* Centers the container horizontally */
+    /* No padding here, as elements inside will handle their own */
+  }
+
+  .page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    /* Horizontal padding for content inside the header, but header itself is limited by .page-container */
+    padding: 1.5rem 2rem;
+    background: linear-gradient(90deg, var(--title-bg-start), var(--title-bg-end));
+    color: var(--title-fg);
+    box-shadow: 0 4px 10px var(--title-shadow-light);
+    margin-bottom: 2rem;
+    /* No max-width or margin auto here, it inherits from .page-container */
+  }
+  html.dark .page-header {
+    box-shadow: 0 4px 10px var(--title-shadow-dark);
+  }
+
+  .page-title {
+    font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin: 0;
+    text-shadow: 1px 1px 3px rgba(0,0,0,0.2);
+  }
+
+  /* Main content area no longer needs its own padding; .page-container handles outer constraint */
+  main {
+      padding: 0;
+  }
+
+  /* Adjustments for timestamp container */
+  .timestamp-container {
+    background: var(--timestamp-bg);
+    color: var(--timestamp-fg);
+    /* Apply horizontal padding directly to timestamp container */
+    padding: 0.8rem 2rem;
+    border-radius: 6px;
+    margin-bottom: 1.5rem;
+    font-size: 0.9rem;
+    display: grid;
+    grid-template-columns: max-content max-content; /* Updated for 3 columns now */
+    column-gap: 2rem;
+    row-gap: 0.5rem;
+    align-items: center;
+  }
+  .timestamp-container .ts-label {
+    color: var(--ts-label);
+    font-weight: bold;
+  }
+  .timestamp-container .iso-ts {
+    background: var(--iso-ts-bg);
+    color: var(--iso-ts-color);
+    padding: 0 0.2em;
+    border-radius: 3px;
+    font-weight: bold;
+  }
+  .timestamp-container .local-ts {
+    background: var(--local-ts-bg);
+    color: var(--local-ts-color);
+    padding: 0 0.2em;
+    border-radius: 3px;
+    font-weight: bold;
+  }
+  /* Style for Total Commits */
+  .timestamp-container .total-commits {
+    background: var(--title-bg-start); /* Using a title color for prominence */
+    color: var(--title-fg);
+    padding: 0 0.2em;
+    border-radius: 3px;
+    font-weight: bold;
+    grid-column: 1 / -1; /* Span across all columns */
+    text-align: center;
+    padding: 0.5em 1em;
+    font-size: 1.1em;
+  }
+
+
+  .commit-block {
+    margin-bottom: 2em;
+    border-bottom: 1px solid var(--border);
+    /* Apply horizontal padding directly to commit blocks */
+    padding: 1em 2rem;
+  }
+  .commit-block:last-child {
+    border-bottom: none;
+    margin-bottom: 0;
+    padding-bottom: 1em;
+  }
+  .commit-number {
+    font-weight: 700;
+    font-size: 1.25rem;
+    color: var(--link);
+    margin-bottom: 0.5rem;
+    margin-top: 0;
+    font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+    user-select: none;
+  }
+  .commit-line {
+    display: flex;
+    align-items: center;
+    gap: 0.4em;
+    margin: 0.1em 0;
+    white-space: nowrap;
+    font-weight: normal;
+  }
+  .commit-line > span.label {
+    flex-shrink: 0;
+    user-select: none;
+    font-weight: bold;
+  }
+  .copy-link {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    font-size: 1rem;
+    padding: 0;
+    margin: 0 0 0 0.3em;
+    color: var(--link);
+    line-height: 1;
+    flex-shrink: 0;
+    user-select: none;
+    position: relative;
+  }
+  .copy-link:hover {
+    color: var(--link-hover);
+  }
+  .iso-date {
+    color: var(--iso-color);
+    background: var(--iso-bg);
+    padding: 0 0.2em;
+    border-radius: 3px;
+  }
+  .relative-date {
+    color: var(--rel-color);
+    font-weight: bold;
+  }
+  .subject-value {
+    color: var(--subject-color);
+  }
+  .commit-body-wrapper {
+    margin-top: 0.6rem;
+    padding-left: 0;
+  }
+  .commit-body-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5em;
+    padding: 0.35em 1em;
+    font-weight: 700;
+    font-size: 1rem;
+    background: var(--body-color);
+    color: var(--bg);
+    border-radius: 9999px;
+    margin-bottom: 0.35em;
+    user-select: none;
+    white-space: nowrap;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.15);
+    letter-spacing: 0.02em;
+    transition: background-color 0.3s ease;
+    margin-left: 0;
+  }
+  .commit-body-label:hover {
+    background: var(--body-color-dark, var(--body-color));
+  }
+  .commit-body {
+    color: var(--body-color);
+    background: transparent;
+    margin: 0;
+    white-space: pre-wrap;
+    font-family: monospace;
+    border-left: 3px solid var(--body-color);
+    padding-left: 0.85rem;
+    overflow-x: auto;
+  }
+
+  .button-container {
+    display: flex;
+    gap: 1rem;
+    z-index: 10000;
+  }
+  .action-button {
+    white-space: nowrap;
+    background: var(--btn-bg);
+    color: var(--btn-fg);
+    border: none;
+    padding: 0.6em 1.2em;
+    border-radius: 5px;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3em;
+    transition: background-color 0.2s ease, transform 0.1s ease;
+  }
+  .action-button:hover {
+    background: var(--btn-hover);
+    transform: translateY(-1px);
+  }
+  .action-button:active {
+    transform: translateY(0);
+  }
+
+  /* Tooltip for commit link */
+  .commit-link-wrapper {
+    position: relative;
+    display: inline-block;
+  }
+  .commit-link-tooltip {
+    position: absolute;
+    bottom: 125%;
+    left: 70%;
+    transform: translateX(-30%);
+    background-color: var(--btn-bg);
+    color: var(--btn-fg);
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    white-space: nowrap;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s;
+    z-index: 10;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.25);
+  }
+  .commit-link-wrapper:hover .commit-link-tooltip {
+    opacity: 1;
+    pointer-events: auto;
+  }
+  .commit-link-tooltip .hash {
+    color: var(--link);
+    font-weight: bold;
+  }
+
+  /* Tooltip for copy button */
+  .copy-link .custom-tooltip {
+    position: absolute;
+    bottom: 125%;
+    left: 90%;
+    transform: translateX(-10%);
+    background-color: #222;
+    color: #eee;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    white-space: nowrap;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s, background-color 0.3s;
+    z-index: 10;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.25);
+  }
+  .copy-link:hover .custom-tooltip {
+    opacity: 1;
+    pointer-events: auto;
+  }
+  /* NEW: Class for when the "copied" message is active */
+  .copy-link .custom-tooltip.copied-active {
+    opacity: 1;
+    pointer-events: auto;
+    background-color: #4CAF50;
+    color: white;
+  }
+  .custom-tooltip .hash {
+    color: var(--link);
+    font-weight: bold;
+  }
+
+  /* Status Indicator Styles */
+  .commit-status-line {
+    margin-top: 0.5rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.8rem;
+    user-select: none;
+  }
+
+  .commit-status {
+    display: flex;
+    align-items: center; /* Centers items vertically within the flex container */
+    gap: 0.4em;
+    padding: 0.35em 0.7em;
+    border-radius: 9999px;
+    font-weight: bold;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    transition: background-color 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
+    line-height: 1; /* Essential for tightening the flex container's internal height */
+    font-size: 0.85rem; /* Set base font size for the entire badge */
+  }
+
+  .commit-status .icon {
+    line-height: 1; /* Keep its own line box tight */
+    font-size: 1.1em; /* Make icon slightly larger than badge text */
+    flex-shrink: 0; /* Prevent icon from shrinking */
+  }
+
+  .commit-status .text {
+      line-height: 1; /* Ensure text also has a tight line box */
+  }
+
+
+  /* Applying theme-based status colors via CSS variables */
+  .commit-status.local {
+    background-color: var(--status-local-bg);
+    color: var(--status-local-fg);
+  }
+  .commit-status.remote.pushed {
+    background-color: var(--status-pushed-bg);
+    color: var(--status-pushed-fg);
+  }
+  .commit-status.remote.not-pushed {
+    background-color: var(--status-not-pushed-bg);
+    color: var(--status-not-pushed-fg);
+  }
+  .commit-status.not-in-local {
+    background-color: var(--status-not-in-local-bg);
+    color: var(--status-not-in-local-fg);
+  }
+  .commit-status.fetched-remote {
+    background-color: var(--status-fetched-remote-bg);
+    color: var(--status-fetched-remote-fg);
+  }
+  .commit-status.unknown-status {
+    background-color: var(--status-unknown-bg);
+    color: var(--status-unknown-fg);
+  }
+
+</style>
+</head>
+<body>
+  <div class="page-container">
+    <header class="page-header">
+      <h1 class="page-title">Project Commit Log</h1>
+      <div class="button-container">
+        <button id="toggle-theme" class="action-button" aria-pressed="false" aria-label="Toggle dark/light theme">🌗 Toggle Theme</button>
+        <button id="export-pdf" class="action-button" aria-label="Save page as PDF for printing">🖨️ Save as PDF</button>
+      </div>
+    </header>
+
+    <main id="main-content" role="list" aria-label="Git commits">
+      <div class="timestamp-container" role="contentinfo" aria-live="polite">
+        <div><span class="ts-label">Report generated (ISO):</span> <span class="iso-ts">2026-03-01T15:29:16.085Z</span></div>
+        <div><span class="ts-label">Report generated (Local):</span> <span class="local-ts">01/03/2026, 15:29:16</span></div>
+        <div class="total-commits"><span class="ts-label">Total Commits:</span> 60</div>
+      </div>
+      <div class="commit-block" role="listitem" tabindex="0">
+        <div class="commit-number">Commit #60</div>
+        
+<div class="commit-line">
+    <span class="label">Commit:</span>
+    <span class="commit-link-wrapper">
+                    <a href="https://github.com/wilderyns/steam_market_analyser/commit/293ee1c6a98054a5f0ef5fd1f1f0d03b16b5e887" class="commit-link" target="_blank" rel="noopener noreferrer">293ee1c</a>
+                    <span class="commit-link-tooltip">
+                      View commit <span class="hash">293ee1c</span> on remote repository
+                    </span>
+                </span>
+                <button class="copy-link" data-link="https://github.com/wilderyns/steam_market_analyser/commit/293ee1c6a98054a5f0ef5fd1f1f0d03b16b5e887" data-full-hash="293ee1c6a98054a5f0ef5fd1f1f0d03b16b5e887" aria-label="Copy commit link to clipboard" title="">
+                  🔗
+                  <span class="custom-tooltip">Copy <span class="hash">293ee1c</span> commit link</span>
+                </button>
+</div>
+<div class="commit-status-line" aria-label="Commit status">
+    <span class="commit-status local" title="Exists in Your Local Branch">
+        <span class="icon"><i class="fa-solid fa-code-branch"></i></span> <span class="text">Exists in Your Local Branch</span>
+    </span>
+    <span class="commit-status remote not-pushed" title="Not Pushed to Remote Repo">
+        <span class="icon"><i class="fa-solid fa-arrow-up-from-bracket"></i></span> <span class="text">Not Pushed to Remote Repo</span>
+    </span>
+</div>
+<div class="commit-line">ISO Author Date: <span class="iso-date">2026-03-01T15:16:31Z</span></div>
+<div class="commit-line">Relative Author Date: <span class="relative-date">13 minutes ago</span></div>
+<div class="commit-line">Subject: <span class="subject-value">Docstrings and removed console.input references</span></div>
+        
+      </div>
+<div class="commit-block" role="listitem" tabindex="0">
+        <div class="commit-number">Commit #59</div>
+        <div class="commit-line"></div>
+
+<div class="commit-line">
+    <span class="label">Commit:</span>
+    <span class="commit-link-wrapper">
+                    <a href="https://github.com/wilderyns/steam_market_analyser/commit/f685b3c21376afca0d3632498458d1069b0361ac" class="commit-link" target="_blank" rel="noopener noreferrer">f685b3c</a>
+                    <span class="commit-link-tooltip">
+                      View commit <span class="hash">f685b3c</span> on remote repository
+                    </span>
+                </span>
+                <button class="copy-link" data-link="https://github.com/wilderyns/steam_market_analyser/commit/f685b3c21376afca0d3632498458d1069b0361ac" data-full-hash="f685b3c21376afca0d3632498458d1069b0361ac" aria-label="Copy commit link to clipboard" title="">
+                  🔗
+                  <span class="custom-tooltip">Copy <span class="hash">f685b3c</span> commit link</span>
+                </button>
+</div>
+<div class="commit-status-line" aria-label="Commit status">
+    <span class="commit-status local" title="Exists in Your Local Branch">
+        <span class="icon"><i class="fa-solid fa-code-branch"></i></span> <span class="text">Exists in Your Local Branch</span>
+    </span>
+    <span class="commit-status remote not-pushed" title="Not Pushed to Remote Repo">
+        <span class="icon"><i class="fa-solid fa-arrow-up-from-bracket"></i></span> <span class="text">Not Pushed to Remote Repo</span>
+    </span>
+</div>
+<div class="commit-line">ISO Author Date: <span class="iso-date">2026-03-01T14:26:56Z</span></div>
+<div class="commit-line">Relative Author Date: <span class="relative-date">62 minutes ago</span></div>
+<div class="commit-line">Subject: <span class="subject-value">Transformation Controller now expects user input</span></div>
+        <div class="commit-body-wrapper">
+                    <div class="commit-body-label">📝 Body</div>
+                    <pre class="commit-body">Removed temporary input handling functions and migrated to expect_user_input</pre>
+                </div>
+      </div>
+<div class="commit-block" role="listitem" tabindex="0">
+        <div class="commit-number">Commit #58</div>
+        <div class="commit-line"></div>
+
+<div class="commit-line">
+    <span class="label">Commit:</span>
+    <span class="commit-link-wrapper">
+                    <a href="https://github.com/wilderyns/steam_market_analyser/commit/1545eabac16b3dbe7c5990cfa4aef6f436960fb6" class="commit-link" target="_blank" rel="noopener noreferrer">1545eab</a>
+                    <span class="commit-link-tooltip">
+                      View commit <span class="hash">1545eab</span> on remote repository
+                    </span>
+                </span>
+                <button class="copy-link" data-link="https://github.com/wilderyns/steam_market_analyser/commit/1545eabac16b3dbe7c5990cfa4aef6f436960fb6" data-full-hash="1545eabac16b3dbe7c5990cfa4aef6f436960fb6" aria-label="Copy commit link to clipboard" title="">
+                  🔗
+                  <span class="custom-tooltip">Copy <span class="hash">1545eab</span> commit link</span>
+                </button>
+</div>
+<div class="commit-status-line" aria-label="Commit status">
+    <span class="commit-status local" title="Exists in Your Local Branch">
+        <span class="icon"><i class="fa-solid fa-check"></i></span> <span class="text">Exists in Your Local Branch</span>
+    </span>
+    <span class="commit-status remote pushed" title="Pushed to Remote Repo">
+        <span class="icon"><i class="fa-solid fa-check"></i></span> <span class="text">Pushed to Remote Repo</span>
+    </span>
+</div>
+<div class="commit-line">ISO Author Date: <span class="iso-date">2026-03-01T01:35:31Z</span></div>
+<div class="commit-line">Relative Author Date: <span class="relative-date">14 hours ago</span></div>
+<div class="commit-line">Subject: <span class="subject-value">Create writeup.md</span></div>
+        
+      </div>
+<div class="commit-block" role="listitem" tabindex="0">
+        <div class="commit-number">Commit #57</div>
+        <div class="commit-line"></div>
+
+<div class="commit-line">
+    <span class="label">Commit:</span>
+    <span class="commit-link-wrapper">
+                    <a href="https://github.com/wilderyns/steam_market_analyser/commit/e36d190a14dd3b799b5fc07d4538bd7ba875c3e5" class="commit-link" target="_blank" rel="noopener noreferrer">e36d190</a>
+                    <span class="commit-link-tooltip">
+                      View commit <span class="hash">e36d190</span> on remote repository
+                    </span>
+                </span>
+                <button class="copy-link" data-link="https://github.com/wilderyns/steam_market_analyser/commit/e36d190a14dd3b799b5fc07d4538bd7ba875c3e5" data-full-hash="e36d190a14dd3b799b5fc07d4538bd7ba875c3e5" aria-label="Copy commit link to clipboard" title="">
+                  🔗
+                  <span class="custom-tooltip">Copy <span class="hash">e36d190</span> commit link</span>
+                </button>
+</div>
+<div class="commit-status-line" aria-label="Commit status">
+    <span class="commit-status local" title="Exists in Your Local Branch">
+        <span class="icon"><i class="fa-solid fa-check"></i></span> <span class="text">Exists in Your Local Branch</span>
+    </span>
+    <span class="commit-status remote pushed" title="Pushed to Remote Repo">
+        <span class="icon"><i class="fa-solid fa-check"></i></span> <span class="text">Pushed to Remote Repo</span>
+    </span>
+</div>
+<div class="commit-line">ISO Author Date: <span class="iso-date">2026-02-28T22:35:31Z</span></div>
+<div class="commit-line">Relative Author Date: <span class="relative-date">17 hours ago</span></div>
+<div class="commit-line">Subject: <span class="subject-value">Update README.md</span></div>
+        
+      </div>
+<div class="commit-block" role="listitem" tabindex="0">
+        <div class="commit-number">Commit #56</div>
+        <div class="commit-line"></div>
+
+<div class="commit-line">
+    <span class="label">Commit:</span>
+    <span class="commit-link-wrapper">
+                    <a href="https://github.com/wilderyns/steam_market_analyser/commit/247777a3d8127ba79c4aa175dba1ac5f373982a9" class="commit-link" target="_blank" rel="noopener noreferrer">247777a</a>
+                    <span class="commit-link-tooltip">
+                      View commit <span class="hash">247777a</span> on remote repository
+                    </span>
+                </span>
+                <button class="copy-link" data-link="https://github.com/wilderyns/steam_market_analyser/commit/247777a3d8127ba79c4aa175dba1ac5f373982a9" data-full-hash="247777a3d8127ba79c4aa175dba1ac5f373982a9" aria-label="Copy commit link to clipboard" title="">
+                  🔗
+                  <span class="custom-tooltip">Copy <span class="hash">247777a</span> commit link</span>
+                </button>
+</div>
+<div class="commit-status-line" aria-label="Commit status">
+    <span class="commit-status local" title="Exists in Your Local Branch">
+        <span class="icon"><i class="fa-solid fa-check"></i></span> <span class="text">Exists in Your Local Branch</span>
+    </span>
+    <span class="commit-status remote pushed" title="Pushed to Remote Repo">
+        <span class="icon"><i class="fa-solid fa-check"></i></span> <span class="text">Pushed to Remote Repo</span>
+    </span>
+</div>
+<div class="commit-line">ISO Author Date: <span class="iso-date">2026-02-28T22:33:23Z</span></div>
+<div class="commit-line">Relative Author Date: <span class="relative-date">17 hours ago</span></div>
+<div class="commit-line">Subject: <span class="subject-value">Dataset creation now a factory</span></div>
+        
+      </div>
+<div class="commit-block" role="listitem" tabindex="0">
+        <div class="commit-number">Commit #55</div>
+        <div class="commit-line"></div>
+
+<div class="commit-line">
+    <span class="label">Commit:</span>
+    <span class="commit-link-wrapper">
+                    <a href="https://github.com/wilderyns/steam_market_analyser/commit/7d631910d0f2de3f64f29bedb1d9d18b5c306b62" class="commit-link" target="_blank" rel="noopener noreferrer">7d63191</a>
+                    <span class="commit-link-tooltip">
+                      View commit <span class="hash">7d63191</span> on remote repository
+                    </span>
+                </span>
+                <button class="copy-link" data-link="https://github.com/wilderyns/steam_market_analyser/commit/7d631910d0f2de3f64f29bedb1d9d18b5c306b62" data-full-hash="7d631910d0f2de3f64f29bedb1d9d18b5c306b62" aria-label="Copy commit link to clipboard" title="">
+                  🔗
+                  <span class="custom-tooltip">Copy <span class="hash">7d63191</span> commit link</span>
+                </button>
+</div>
+<div class="commit-status-line" aria-label="Commit status">
+    <span class="commit-status local" title="Exists in Your Local Branch">
+        <span class="icon"><i class="fa-solid fa-check"></i></span> <span class="text">Exists in Your Local Branch</span>
+    </span>
+    <span class="commit-status remote pushed" title="Pushed to Remote Repo">
+        <span class="icon"><i class="fa-solid fa-check"></i></span> <span class="text">Pushed to Remote Repo</span>
+    </span>
+</div>
+<div class="commit-line">ISO Author Date: <span class="iso-date">2026-02-28T21:56:02Z</span></div>
+<div class="commit-line">Relative Author Date: <span class="relative-date">18 hours ago</span></div>
+<div class="commit-line">Subject: <span class="subject-value">Error check numpy</span></div>
+        
+      </div>
+<div class="commit-block" role="listitem" tabindex="0">
+        <div class="commit-number">Commit #54</div>
+        <div class="commit-line"></div>
+
+<div class="commit-line">
+    <span class="label">Commit:</span>
+    <span class="commit-link-wrapper">
+                    <a href="https://github.com/wilderyns/steam_market_analyser/commit/c1d457e493ba8dd42770a5d86a96e2c2b9e90f28" class="commit-link" target="_blank" rel="noopener noreferrer">c1d457e</a>
+                    <span class="commit-link-tooltip">
+                      View commit <span class="hash">c1d457e</span> on remote repository
+                    </span>
+                </span>
+                <button class="copy-link" data-link="https://github.com/wilderyns/steam_market_analyser/commit/c1d457e493ba8dd42770a5d86a96e2c2b9e90f28" data-full-hash="c1d457e493ba8dd42770a5d86a96e2c2b9e90f28" aria-label="Copy commit link to clipboard" title="">
+                  🔗
+                  <span class="custom-tooltip">Copy <span class="hash">c1d457e</span> commit link</span>
+                </button>
+</div>
+<div class="commit-status-line" aria-label="Commit status">
+    <span class="commit-status local" title="Exists in Your Local Branch">
+        <span class="icon"><i class="fa-solid fa-check"></i></span> <span class="text">Exists in Your Local Branch</span>
+    </span>
+    <span class="commit-status remote pushed" title="Pushed to Remote Repo">
+        <span class="icon"><i class="fa-solid fa-check"></i></span> <span class="text">Pushed to Remote Repo</span>
+    </span>
+</div>
+<div class="commit-line">ISO Author Date: <span class="iso-date">2026-02-28T14:59:39Z</span></div>
+<div class="commit-line">Relative Author Date: <span class="relative-date">25 hours ago</span></div>
+<div class="commit-line">Subject: <span class="subject-value">Delete writeup.md</span></div>
+        
+      </div>
+<div class="commit-block" role="listitem" tabindex="0">
+        <div class="commit-number">Commit #53</div>
+        <div class="commit-line"></div>
+
+<div class="commit-line">
+    <span class="label">Commit:</span>
+    <span class="commit-link-wrapper">
+                    <a href="https://github.com/wilderyns/steam_market_analyser/commit/ee06dcb00581fa012b2b9f178bc3a0059ad248ad" class="commit-link" target="_blank" rel="noopener noreferrer">ee06dcb</a>
+                    <span class="commit-link-tooltip">
+                      View commit <span class="hash">ee06dcb</span> on remote repository
+                    </span>
+                </span>
+                <button class="copy-link" data-link="https://github.com/wilderyns/steam_market_analyser/commit/ee06dcb00581fa012b2b9f178bc3a0059ad248ad" data-full-hash="ee06dcb00581fa012b2b9f178bc3a0059ad248ad" aria-label="Copy commit link to clipboard" title="">
+                  🔗
+                  <span class="custom-tooltip">Copy <span class="hash">ee06dcb</span> commit link</span>
+                </button>
+</div>
+<div class="commit-status-line" aria-label="Commit status">
+    <span class="commit-status local" title="Exists in Your Local Branch">
+        <span class="icon"><i class="fa-solid fa-check"></i></span> <span class="text">Exists in Your Local Branch</span>
+    </span>
+    <span class="commit-status remote pushed" title="Pushed to Remote Repo">
+        <span class="icon"><i class="fa-solid fa-check"></i></span> <span class="text">Pushed to Remote Repo</span>
+    </span>
+</div>
+<div class="commit-line">ISO Author Date: <span class="iso-date">2026-02-28T14:58:34Z</span></div>
+<div class="commit-line">Relative Author Date: <span class="relative-date">25 hours ago</span></div>
+<div class="commit-line">Subject: <span class="subject-value">Added dataset csv (now reduced)</span></div>
+        
+      </div>
+<div class="commit-block" role="listitem" tabindex="0">
+        <div class="commit-number">Commit #52</div>
+        <div class="commit-line"></div>
+
+<div class="commit-line">
+    <span class="label">Commit:</span>
+    <span class="commit-link-wrapper">
+                    <a href="https://github.com/wilderyns/steam_market_analyser/commit/773e8561a679b65aeb6250dd048c699b549d725d" class="commit-link" target="_blank" rel="noopener noreferrer">773e856</a>
+                    <span class="commit-link-tooltip">
+                      View commit <span class="hash">773e856</span> on remote repository
+                    </span>
+                </span>
+                <button class="copy-link" data-link="https://github.com/wilderyns/steam_market_analyser/commit/773e8561a679b65aeb6250dd048c699b549d725d" data-full-hash="773e8561a679b65aeb6250dd048c699b549d725d" aria-label="Copy commit link to clipboard" title="">
+                  🔗
+                  <span class="custom-tooltip">Copy <span class="hash">773e856</span> commit link</span>
+                </button>
+</div>
+<div class="commit-status-line" aria-label="Commit status">
+    <span class="commit-status local" title="Exists in Your Local Branch">
+        <span class="icon"><i class="fa-solid fa-check"></i></span> <span class="text">Exists in Your Local Branch</span>
+    </span>
+    <span class="commit-status remote pushed" title="Pushed to Remote Repo">
+        <span class="icon"><i class="fa-solid fa-check"></i></span> <span class="text">Pushed to Remote Repo</span>
+    </span>
+</div>
+<div class="commit-line">ISO Author Date: <span class="iso-date">2026-02-28T14:53:25Z</span></div>
+<div class="commit-line">Relative Author Date: <span class="relative-date">25 hours ago</span></div>
+<div class="commit-line">Subject: <span class="subject-value">Update README.md</span></div>
+        
+      </div>
+<div class="commit-block" role="listitem" tabindex="0">
+        <div class="commit-number">Commit #51</div>
+        <div class="commit-line"></div>
+
+<div class="commit-line">
+    <span class="label">Commit:</span>
+    <span class="commit-link-wrapper">
+                    <a href="https://github.com/wilderyns/steam_market_analyser/commit/2ea8381cd1695bd40444bd00fd5475792f4fee72" class="commit-link" target="_blank" rel="noopener noreferrer">2ea8381</a>
+                    <span class="commit-link-tooltip">
+                      View commit <span class="hash">2ea8381</span> on remote repository
+                    </span>
+                </span>
+                <button class="copy-link" data-link="https://github.com/wilderyns/steam_market_analyser/commit/2ea8381cd1695bd40444bd00fd5475792f4fee72" data-full-hash="2ea8381cd1695bd40444bd00fd5475792f4fee72" aria-label="Copy commit link to clipboard" title="">
+                  🔗
+                  <span class="custom-tooltip">Copy <span class="hash">2ea8381</span> commit link</span>
+                </button>
+</div>
+<div class="commit-status-line" aria-label="Commit status">
+    <span class="commit-status local" title="Exists in Your Local Branch">
+        <span class="icon"><i class="fa-solid fa-check"></i></span> <span class="text">Exists in Your Local Branch</span>
+    </span>
+    <span class="commit-status remote pushed" title="Pushed to Remote Repo">
+        <span class="icon"><i class="fa-solid fa-check"></i></span> <span class="text">Pushed to Remote Repo</span>
+    </span>
+</div>
+<div class="commit-line">ISO Author Date: <span class="iso-date">2026-02-28T12:22:38Z</span></div>
+<div class="commit-line">Relative Author Date: <span class="relative-date">27 hours ago</span></div>
+<div class="commit-line">Subject: <span class="subject-value">Added dedupe logic</span></div>
+        <div class="commit-body-wrapper">
+                    <div class="commit-body-label">📝 Body</div>
+                    <pre class="commit-body">As shown by the test, Rainbow Six Siege was spat out 5 times.
+Implemented fix to remove duplicates based on name column</pre>
+                </div>
+      </div>
+<div class="commit-block" role="listitem" tabindex="0">
+        <div class="commit-number">Commit #50</div>
+        <div class="commit-line"></div>
+
+<div class="commit-line">
+    <span class="label">Commit:</span>
+    <span class="commit-link-wrapper">
+                    <a href="https://github.com/wilderyns/steam_market_analyser/commit/441d8cbb149176766f64b140f5e138e76a950855" class="commit-link" target="_blank" rel="noopener noreferrer">441d8cb</a>
+                    <span class="commit-link-tooltip">
+                      View commit <span class="hash">441d8cb</span> on remote repository
+                    </span>
+                </span>
+                <button class="copy-link" data-link="https://github.com/wilderyns/steam_market_analyser/commit/441d8cbb149176766f64b140f5e138e76a950855" data-full-hash="441d8cbb149176766f64b140f5e138e76a950855" aria-label="Copy commit link to clipboard" title="">
+                  🔗
+                  <span class="custom-tooltip">Copy <span class="hash">441d8cb</span> commit link</span>
+                </button>
+</div>
+<div class="commit-status-line" aria-label="Commit status">
+    <span class="commit-status local" title="Exists in Your Local Branch">
+        <span class="icon"><i class="fa-solid fa-check"></i></span> <span class="text">Exists in Your Local Branch</span>
+    </span>
+    <span class="commit-status remote pushed" title="Pushed to Remote Repo">
+        <span class="icon"><i class="fa-solid fa-check"></i></span> <span class="text">Pushed to Remote Repo</span>
+    </span>
+</div>
+<div class="commit-line">ISO Author Date: <span class="iso-date">2026-02-27T20:03:31Z</span></div>
+<div class="commit-line">Relative Author Date: <span class="relative-date">2 days ago</span></div>
+<div class="commit-line">Subject: <span class="subject-value">Implemented test and fixes as a result</span></div>
+        
+      </div>
+<div class="commit-block" role="listitem" tabindex="0">
+        <div class="commit-number">Commit #49</div>
+        <div class="commit-line"></div>
+
+<div class="commit-line">
+    <span class="label">Commit:</span>
+    <span class="commit-link-wrapper">
+                    <a href="https://github.com/wilderyns/steam_market_analyser/commit/51746f01676988ae104fd403ad36a37b54e8034b" class="commit-link" target="_blank" rel="noopener noreferrer">51746f0</a>
+                    <span class="commit-link-tooltip">
+                      View commit <span class="hash">51746f0</span> on remote repository
+                    </span>
+                </span>
+                <button class="copy-link" data-link="https://github.com/wilderyns/steam_market_analyser/commit/51746f01676988ae104fd403ad36a37b54e8034b" data-full-hash="51746f01676988ae104fd403ad36a37b54e8034b" aria-label="Copy commit link to clipboard" title="">
+                  🔗
+                  <span class="custom-tooltip">Copy <span class="hash">51746f0</span> commit link</span>
+                </button>
+</div>
+<div class="commit-status-line" aria-label="Commit status">
+    <span class="commit-status local" title="Exists in Your Local Branch">
+        <span class="icon"><i class="fa-solid fa-check"></i></span> <span class="text">Exists in Your Local Branch</span>
+    </span>
+    <span class="commit-status remote pushed" title="Pushed to Remote Repo">
+        <span class="icon"><i class="fa-solid fa-check"></i></span> <span class="text">Pushed to Remote Repo</span>
+    </span>
+</div>
+<div class="commit-line">ISO Author Date: <span class="iso-date">2026-02-27T13:01:01Z</span></div>
+<div class="commit-line">Relative Author Date: <span class="relative-date">2 days ago</span></div>
+<div class="commit-line">Subject: <span class="subject-value">Added pie graphs</span></div>
+        
+      </div>
+<div class="commit-block" role="listitem" tabindex="0">
+        <div class="commit-number">Commit #48</div>
+        <div class="commit-line"></div>
+
+<div class="commit-line">
+    <span class="label">Commit:</span>
+    <span class="commit-link-wrapper">
+                    <a href="https://github.com/wilderyns/steam_market_analyser/commit/99a0602dfa566e325d51ae50eb53b8a546c0d6c0" class="commit-link" target="_blank" rel="noopener noreferrer">99a0602</a>
+                    <span class="commit-link-tooltip">
+                      View commit <span class="hash">99a0602</span> on remote repository
+                    </span>
+                </span>
+                <button class="copy-link" data-link="https://github.com/wilderyns/steam_market_analyser/commit/99a0602dfa566e325d51ae50eb53b8a546c0d6c0" data-full-hash="99a0602dfa566e325d51ae50eb53b8a546c0d6c0" aria-label="Copy commit link to clipboard" title="">
+                  🔗
+                  <span class="custom-tooltip">Copy <span class="hash">99a0602</span> commit link</span>
+                </button>
+</div>
+<div class="commit-status-line" aria-label="Commit status">
+    <span class="commit-status local" title="Exists in Your Local Branch">
+        <span class="icon"><i class="fa-solid fa-check"></i></span> <span class="text">Exists in Your Local Branch</span>
+    </span>
+    <span class="commit-status remote pushed" title="Pushed to Remote Repo">
+        <span class="icon"><i class="fa-solid fa-check"></i></span> <span class="text">Pushed to Remote Repo</span>
+    </span>
+</div>
+<div class="commit-line">ISO Author Date: <span class="iso-date">2026-02-26T18:22:59Z</span></div>
+<div class="commit-line">Relative Author Date: <span class="relative-date">3 days ago</span></div>
+<div class="commit-line">Subject: <span class="subject-value">Adding tag genre splitting to group analysis</span></div>
+        
+      </div>
+<div class="commit-block" role="listitem" tabindex="0">
+        <div class="commit-number">Commit #47</div>
+        <div class="commit-line"></div>
+
+<div class="commit-line">
+    <span class="label">Commit:</span>
+    <span class="commit-link-wrapper">
+                    <a href="https://github.com/wilderyns/steam_market_analyser/commit/5d1db7db1cc9c2f2f64ee7355fba2662dd789912" class="commit-link" target="_blank" rel="noopener noreferrer">5d1db7d</a>
+                    <span class="commit-link-tooltip">
+                      View commit <span class="hash">5d1db7d</span> on remote repository
+                    </span>
+                </span>
+                <button class="copy-link" data-link="https://github.com/wilderyns/steam_market_analyser/commit/5d1db7db1cc9c2f2f64ee7355fba2662dd789912" data-full-hash="5d1db7db1cc9c2f2f64ee7355fba2662dd789912" aria-label="Copy commit link to clipboard" title="">
+                  🔗
+                  <span class="custom-tooltip">Copy <span class="hash">5d1db7d</span> commit link</span>
+                </button>
+</div>
+<div class="commit-status-line" aria-label="Commit status">
+    <span class="commit-status local" title="Exists in Your Local Branch">
+        <span class="icon"><i class="fa-solid fa-check"></i></span> <span class="text">Exists in Your Local Branch</span>
+    </span>
+    <span class="commit-status remote pushed" title="Pushed to Remote Repo">
+        <span class="icon"><i class="fa-solid fa-check"></i></span> <span class="text">Pushed to Remote Repo</span>
+    </span>
+</div>
+<div class="commit-line">ISO Author Date: <span class="iso-date">2026-02-26T18:00:09Z</span></div>
+<div class="commit-line">Relative Author Date: <span class="relative-date">3 days ago</span></div>
+<div class="commit-line">Subject: <span class="subject-value">Update transform_root.py</span></div>
+        
+      </div>
+<div class="commit-block" role="listitem" tabindex="0">
+        <div class="commit-number">Commit #46</div>
+        <div class="commit-line"></div>
+
+<div class="commit-line">
+    <span class="label">Commit:</span>
+    <span class="commit-link-wrapper">
+                    <a href="https://github.com/wilderyns/steam_market_analyser/commit/e5c0d6dc9f127eb1d5f4a068c4f7a06b25698cb9" class="commit-link" target="_blank" rel="noopener noreferrer">e5c0d6d</a>
+                    <span class="commit-link-tooltip">
+                      View commit <span class="hash">e5c0d6d</span> on remote repository
+                    </span>
+                </span>
+                <button class="copy-link" data-link="https://github.com/wilderyns/steam_market_analyser/commit/e5c0d6dc9f127eb1d5f4a068c4f7a06b25698cb9" data-full-hash="e5c0d6dc9f127eb1d5f4a068c4f7a06b25698cb9" aria-label="Copy commit link to clipboard" title="">
+                  🔗
+                  <span class="custom-tooltip">Copy <span class="hash">e5c0d6d</span> commit link</span>
+                </button>
+</div>
+<div class="commit-status-line" aria-label="Commit status">
+    <span class="commit-status local" title="Exists in Your Local Branch">
+        <span class="icon"><i class="fa-solid fa-check"></i></span> <span class="text">Exists in Your Local Branch</span>
+    </span>
+    <span class="commit-status remote pushed" title="Pushed to Remote Repo">
+        <span class="icon"><i class="fa-solid fa-check"></i></span> <span class="text">Pushed to Remote Repo</span>
+    </span>
+</div>
+<div class="commit-line">ISO Author Date: <span class="iso-date">2026-02-26T18:36:12Z</span></div>
+<div class="commit-line">Relative Author Date: <span class="relative-date">3 days ago</span></div>
+<div class="commit-line">Subject: <span class="subject-value">Added csv export function</span></div>
+        
+      </div>
+<div class="commit-block" role="listitem" tabindex="0">
+        <div class="commit-number">Commit #45</div>
+        <div class="commit-line"></div>
+
+<div class="commit-line">
+    <span class="label">Commit:</span>
+    <span class="commit-link-wrapper">
+                    <a href="https://github.com/wilderyns/steam_market_analyser/commit/1d4b3eb00551507dcfaf14b912c47e9171349a63" class="commit-link" target="_blank" rel="noopener noreferrer">1d4b3eb</a>
+                    <span class="commit-link-tooltip">
+                      View commit <span class="hash">1d4b3eb</span> on remote repository
+                    </span>
+                </span>
+                <button class="copy-link" data-link="https://github.com/wilderyns/steam_market_analyser/commit/1d4b3eb00551507dcfaf14b912c47e9171349a63" data-full-hash="1d4b3eb00551507dcfaf14b912c47e9171349a63" aria-label="Copy commit link to clipboard" title="">
+                  🔗
+                  <span class="custom-tooltip">Copy <span class="hash">1d4b3eb</span> commit link</span>
+                </button>
+</div>
+<div class="commit-status-line" aria-label="Commit status">
+    <span class="commit-status local" title="Exists in Your Local Branch">
+        <span class="icon"><i class="fa-solid fa-check"></i></span> <span class="text">Exists in Your Local Branch</span>
+    </span>
+    <span class="commit-status remote pushed" title="Pushed to Remote Repo">
+        <span class="icon"><i class="fa-solid fa-check"></i></span> <span class="text">Pushed to Remote Repo</span>
+    </span>
+</div>
+<div class="commit-line">ISO Author Date: <span class="iso-date">2026-02-26T18:31:17Z</span></div>
+<div class="commit-line">Relative Author Date: <span class="relative-date">3 days ago</span></div>
+<div class="commit-line">Subject: <span class="subject-value">Now utilising dataset</span></div>
+        <div class="commit-body-wrapper">
+                    <div class="commit-body-label">📝 Body</div>
+                    <pre class="commit-body">Moved to using dataset rather than placeholder rows and columns</pre>
+                </div>
+      </div>
+<div class="commit-block" role="listitem" tabindex="0">
+        <div class="commit-number">Commit #44</div>
+        <div class="commit-line"></div>
+
+<div class="commit-line">
+    <span class="label">Commit:</span>
+    <span class="commit-link-wrapper">
+                    <a href="https://github.com/wilderyns/steam_market_analyser/commit/509f7119a4c4e5750820efcc1639909e1b433f31" class="commit-link" target="_blank" rel="noopener noreferrer">509f711</a>
+                    <span class="commit-link-tooltip">
+                      View commit <span class="hash">509f711</span> on remote repository
+                    </span>
+                </span>
+                <button class="copy-link" data-link="https://github.com/wilderyns/steam_market_analyser/commit/509f7119a4c4e5750820efcc1639909e1b433f31" data-full-hash="509f7119a4c4e5750820efcc1639909e1b433f31" aria-label="Copy commit link to clipboard" title="">
+                  🔗
+                  <span class="custom-tooltip">Copy <span class="hash">509f711</span> commit link</span>
+                </button>
+</div>
+<div class="commit-status-line" aria-label="Commit status">
+    <span class="commit-status local" title="Exists in Your Local Branch">
+        <span class="icon"><i class="fa-solid fa-check"></i></span> <span class="text">Exists in Your Local Branch</span>
+    </span>
+    <span class="commit-status remote pushed" title="Pushed to Remote Repo">
+        <span class="icon"><i class="fa-solid fa-check"></i></span> <span class="text">Pushed to Remote Repo</span>
+    </span>
+</div>
+<div class="commit-line">ISO Author Date: <span class="iso-date">2026-02-26T17:42:23Z</span></div>
+<div class="commit-line">Relative Author Date: <span class="relative-date">3 days ago</span></div>
+<div class="commit-line">Subject: <span class="subject-value">Fixed option numbering</span></div>
+        
+      </div>
+<div class="commit-block" role="listitem" tabindex="0">
+        <div class="commit-number">Commit #43</div>
+        <div class="commit-line"></div>
+
+<div class="commit-line">
+    <span class="label">Commit:</span>
+    <span class="commit-link-wrapper">
+                    <a href="https://github.com/wilderyns/steam_market_analyser/commit/3fff5796c483418a5b03d107221a0d74238dccfd" class="commit-link" target="_blank" rel="noopener noreferrer">3fff579</a>
+                    <span class="commit-link-tooltip">
+                      View commit <span class="hash">3fff579</span> on remote repository
+                    </span>
+                </span>
+                <button class="copy-link" data-link="https://github.com/wilderyns/steam_market_analyser/commit/3fff5796c483418a5b03d107221a0d74238dccfd" data-full-hash="3fff5796c483418a5b03d107221a0d74238dccfd" aria-label="Copy commit link to clipboard" title="">
+                  🔗
+                  <span class="custom-tooltip">Copy <span class="hash">3fff579</span> commit link</span>
+                </button>
+</div>
+<div class="commit-status-line" aria-label="Commit status">
+    <span class="commit-status local" title="Exists in Your Local Branch">
+        <span class="icon"><i class="fa-solid fa-check"></i></span> <span class="text">Exists in Your Local Branch</span>
+    </span>
+    <span class="commit-status remote pushed" title="Pushed to Remote Repo">
+        <span class="icon"><i class="fa-solid fa-check"></i></span> <span class="text">Pushed to Remote Repo</span>
+    </span>
+</div>
+<div class="commit-line">ISO Author Date: <span class="iso-date">2026-02-26T17:33:29Z</span></div>
+<div class="commit-line">Relative Author Date: <span class="relative-date">3 days ago</span></div>
+<div class="commit-line">Subject: <span class="subject-value">Added dataset viewer toggle</span></div>
+        <div class="commit-body-wrapper">
+                    <div class="commit-body-label">📝 Body</div>
+                    <pre class="commit-body">Can now switch between whole dataset or analysis dataset</pre>
+                </div>
+      </div>
+<div class="commit-block" role="listitem" tabindex="0">
+        <div class="commit-number">Commit #42</div>
+        <div class="commit-line"></div>
+
+<div class="commit-line">
+    <span class="label">Commit:</span>
+    <span class="commit-link-wrapper">
+                    <a href="https://github.com/wilderyns/steam_market_analyser/commit/2c066e547d2021fcd2d3b22fdee6e3780ee307f4" class="commit-link" target="_blank" rel="noopener noreferrer">2c066e5</a>
+                    <span class="commit-link-tooltip">
+                      View commit <span class="hash">2c066e5</span> on remote repository
+                    </span>
+                </span>
+                <button class="copy-link" data-link="https://github.com/wilderyns/steam_market_analyser/commit/2c066e547d2021fcd2d3b22fdee6e3780ee307f4" data-full-hash="2c066e547d2021fcd2d3b22fdee6e3780ee307f4" aria-label="Copy commit link to clipboard" title="">
+                  🔗
+                  <span class="custom-tooltip">Copy <span class="hash">2c066e5</span> commit link</span>
+                </button>
+</div>
+<div class="commit-status-line" aria-label="Commit status">
+    <span class="commit-status local" title="Exists in Your Local Branch">
+        <span class="icon"><i class="fa-solid fa-check"></i></span> <span class="text">Exists in Your Local Branch</span>
+    </span>
+    <span class="commit-status remote pushed" title="Pushed to Remote Repo">
+        <span class="icon"><i class="fa-solid fa-check"></i></span> <span class="text">Pushed to Remote Repo</span>
+    </span>
+</div>
+<div class="commit-line">ISO Author Date: <span class="iso-date">2026-02-26T13:18:38Z</span></div>
+<div class="commit-line">Relative Author Date: <span class="relative-date">3 days ago</span></div>
+<div class="commit-line">Subject: <span class="subject-value">Table after show top N rows now respects selected  columns</span></div>
+        
+      </div>
+<div class="commit-block" role="listitem" tabindex="0">
+        <div class="commit-number">Commit #41</div>
+        <div class="commit-line"></div>
+
+<div class="commit-line">
+    <span class="label">Commit:</span>
+    <span class="commit-link-wrapper">
+                    <a href="https://github.com/wilderyns/steam_market_analyser/commit/809ef3d8ceaf72f3cfe56e6c357aff2052b2a5d0" class="commit-link" target="_blank" rel="noopener noreferrer">809ef3d</a>
+                    <span class="commit-link-tooltip">
+                      View commit <span class="hash">809ef3d</span> on remote repository
+                    </span>
+                </span>
+                <button class="copy-link" data-link="https://github.com/wilderyns/steam_market_analyser/commit/809ef3d8ceaf72f3cfe56e6c357aff2052b2a5d0" data-full-hash="809ef3d8ceaf72f3cfe56e6c357aff2052b2a5d0" aria-label="Copy commit link to clipboard" title="">
+                  🔗
+                  <span class="custom-tooltip">Copy <span class="hash">809ef3d</span> commit link</span>
+                </button>
+</div>
+<div class="commit-status-line" aria-label="Commit status">
+    <span class="commit-status local" title="Exists in Your Local Branch">
+        <span class="icon"><i class="fa-solid fa-check"></i></span> <span class="text">Exists in Your Local Branch</span>
+    </span>
+    <span class="commit-status remote pushed" title="Pushed to Remote Repo">
+        <span class="icon"><i class="fa-solid fa-check"></i></span> <span class="text">Pushed to Remote Repo</span>
+    </span>
+</div>
+<div class="commit-line">ISO Author Date: <span class="iso-date">2026-02-26T12:18:37Z</span></div>
+<div class="commit-line">Relative Author Date: <span class="relative-date">3 days ago</span></div>
+<div class="commit-line">Subject: <span class="subject-value">Added row index to viewer</span></div>
+        
+      </div>
+<div class="commit-block" role="listitem" tabindex="0">
+        <div class="commit-number">Commit #40</div>
+        <div class="commit-line"></div>
+
+<div class="commit-line">
+    <span class="label">Commit:</span>
+    <span class="commit-link-wrapper">
+                    <a href="https://github.com/wilderyns/steam_market_analyser/commit/8d30ea471b7a9d5173c771090356fd0b98b47d85" class="commit-link" target="_blank" rel="noopener noreferrer">8d30ea4</a>
+                    <span class="commit-link-tooltip">
+                      View commit <span class="hash">8d30ea4</span> on remote repository
+                    </span>
+                </span>
+                <button class="copy-link" data-link="https://github.com/wilderyns/steam_market_analyser/commit/8d30ea471b7a9d5173c771090356fd0b98b47d85" data-full-hash="8d30ea471b7a9d5173c771090356fd0b98b47d85" aria-label="Copy commit link to clipboard" title="">
+                  🔗
+                  <span class="custom-tooltip">Copy <span class="hash">8d30ea4</span> commit link</span>
+                </button>
+</div>
+<div class="commit-status-line" aria-label="Commit status">
+    <span class="commit-status local" title="Exists in Your Local Branch">
+        <span class="icon"><i class="fa-solid fa-check"></i></span> <span class="text">Exists in Your Local Branch</span>
+    </span>
+    <span class="commit-status remote pushed" title="Pushed to Remote Repo">
+        <span class="icon"><i class="fa-solid fa-check"></i></span> <span class="text">Pushed to Remote Repo</span>
+    </span>
+</div>
+<div class="commit-line">ISO Author Date: <span class="iso-date">2026-02-26T12:15:15Z</span></div>
+<div class="commit-line">Relative Author Date: <span class="relative-date">3 days ago</span></div>
+<div class="commit-line">Subject: <span class="subject-value">Update .gitignore</span></div>
+        
+      </div>
+<div class="commit-block" role="listitem" tabindex="0">
+        <div class="commit-number">Commit #39</div>
+        <div class="commit-line"></div>
+
+<div class="commit-line">
+    <span class="label">Commit:</span>
+    <span class="commit-link-wrapper">
+                    <a href="https://github.com/wilderyns/steam_market_analyser/commit/0d1ad349dbee1fb654137c46c7e3d285ea7cb396" class="commit-link" target="_blank" rel="noopener noreferrer">0d1ad34</a>
+                    <span class="commit-link-tooltip">
+                      View commit <span class="hash">0d1ad34</span> on remote repository
+                    </span>
+                </span>
+                <button class="copy-link" data-link="https://github.com/wilderyns/steam_market_analyser/commit/0d1ad349dbee1fb654137c46c7e3d285ea7cb396" data-full-hash="0d1ad349dbee1fb654137c46c7e3d285ea7cb396" aria-label="Copy commit link to clipboard" title="">
+                  🔗
+                  <span class="custom-tooltip">Copy <span class="hash">0d1ad34</span> commit link</span>
+                </button>
+</div>
+<div class="commit-status-line" aria-label="Commit status">
+    <span class="commit-status local" title="Exists in Your Local Branch">
+        <span class="icon"><i class="fa-solid fa-check"></i></span> <span class="text">Exists in Your Local Branch</span>
+    </span>
+    <span class="commit-status remote pushed" title="Pushed to Remote Repo">
+        <span class="icon"><i class="fa-solid fa-check"></i></span> <span class="text">Pushed to Remote Repo</span>
+    </span>
+</div>
+<div class="commit-line">ISO Author Date: <span class="iso-date">2026-02-25T23:35:13Z</span></div>
+<div class="commit-line">Relative Author Date: <span class="relative-date">4 days ago</span></div>
+<div class="commit-line">Subject: <span class="subject-value">Add functionality to generate graph from analysis data</span></div>
+        
+      </div>
+<div class="commit-block" role="listitem" tabindex="0">
+        <div class="commit-number">Commit #38</div>
+        <div class="commit-line"></div>
+
+<div class="commit-line">
+    <span class="label">Commit:</span>
+    <span class="commit-link-wrapper">
+                    <a href="https://github.com/wilderyns/steam_market_analyser/commit/0dd76755a0ab80835d30dd7119daebd3a99e8064" class="commit-link" target="_blank" rel="noopener noreferrer">0dd7675</a>
+                    <span class="commit-link-tooltip">
+                      View commit <span class="hash">0dd7675</span> on remote repository
+                    </span>
+                </span>
+                <button class="copy-link" data-link="https://github.com/wilderyns/steam_market_analyser/commit/0dd76755a0ab80835d30dd7119daebd3a99e8064" data-full-hash="0dd76755a0ab80835d30dd7119daebd3a99e8064" aria-label="Copy commit link to clipboard" title="">
+                  🔗
+                  <span class="custom-tooltip">Copy <span class="hash">0dd7675</span> commit link</span>
+                </button>
+</div>
+<div class="commit-status-line" aria-label="Commit status">
+    <span class="commit-status local" title="Exists in Your Local Branch">
+        <span class="icon"><i class="fa-solid fa-check"></i></span> <span class="text">Exists in Your Local Branch</span>
+    </span>
+    <span class="commit-status remote pushed" title="Pushed to Remote Repo">
+        <span class="icon"><i class="fa-solid fa-check"></i></span> <span class="text">Pushed to Remote Repo</span>
+    </span>
+</div>
+<div class="commit-line">ISO Author Date: <span class="iso-date">2026-02-25T17:29:42Z</span></div>
+<div class="commit-line">Relative Author Date: <span class="relative-date">4 days ago</span></div>
+<div class="commit-line">Subject: <span class="subject-value">Graphing Implentation</span></div>
+        
+      </div>
+<div class="commit-block" role="listitem" tabindex="0">
+        <div class="commit-number">Commit #37</div>
+        <div class="commit-line"></div>
+
+<div class="commit-line">
+    <span class="label">Commit:</span>
+    <span class="commit-link-wrapper">
+                    <a href="https://github.com/wilderyns/steam_market_analyser/commit/808d565c919410f02f85fd40972a539ead448d53" class="commit-link" target="_blank" rel="noopener noreferrer">808d565</a>
+                    <span class="commit-link-tooltip">
+                      View commit <span class="hash">808d565</span> on remote repository
+                    </span>
+                </span>
+                <button class="copy-link" data-link="https://github.com/wilderyns/steam_market_analyser/commit/808d565c919410f02f85fd40972a539ead448d53" data-full-hash="808d565c919410f02f85fd40972a539ead448d53" aria-label="Copy commit link to clipboard" title="">
+                  🔗
+                  <span class="custom-tooltip">Copy <span class="hash">808d565</span> commit link</span>
+                </button>
+</div>
+<div class="commit-status-line" aria-label="Commit status">
+    <span class="commit-status local" title="Exists in Your Local Branch">
+        <span class="icon"><i class="fa-solid fa-check"></i></span> <span class="text">Exists in Your Local Branch</span>
+    </span>
+    <span class="commit-status remote pushed" title="Pushed to Remote Repo">
+        <span class="icon"><i class="fa-solid fa-check"></i></span> <span class="text">Pushed to Remote Repo</span>
+    </span>
+</div>
+<div class="commit-line">ISO Author Date: <span class="iso-date">2026-02-24T15:33:11Z</span></div>
+<div class="commit-line">Relative Author Date: <span class="relative-date">5 days ago</span></div>
+<div class="commit-line">Subject: <span class="subject-value">Updated comments</span></div>
+        
+      </div>
+<div class="commit-block" role="listitem" tabindex="0">
+        <div class="commit-number">Commit #36</div>
+        <div class="commit-line"></div>
+
+<div class="commit-line">
+    <span class="label">Commit:</span>
+    <span class="commit-link-wrapper">
+                    <a href="https://github.com/wilderyns/steam_market_analyser/commit/58b7e5a89f9002ea784421ecec04ba5f6fecc9d9" class="commit-link" target="_blank" rel="noopener noreferrer">58b7e5a</a>
+                    <span class="commit-link-tooltip">
+                      View commit <span class="hash">58b7e5a</span> on remote repository
+                    </span>
+                </span>
+                <button class="copy-link" data-link="https://github.com/wilderyns/steam_market_analyser/commit/58b7e5a89f9002ea784421ecec04ba5f6fecc9d9" data-full-hash="58b7e5a89f9002ea784421ecec04ba5f6fecc9d9" aria-label="Copy commit link to clipboard" title="">
+                  🔗
+                  <span class="custom-tooltip">Copy <span class="hash">58b7e5a</span> commit link</span>
+                </button>
+</div>
+<div class="commit-status-line" aria-label="Commit status">
+    <span class="commit-status local" title="Exists in Your Local Branch">
+        <span class="icon"><i class="fa-solid fa-check"></i></span> <span class="text">Exists in Your Local Branch</span>
+    </span>
+    <span class="commit-status remote pushed" title="Pushed to Remote Repo">
+        <span class="icon"><i class="fa-solid fa-check"></i></span> <span class="text">Pushed to Remote Repo</span>
+    </span>
+</div>
+<div class="commit-line">ISO Author Date: <span class="iso-date">2026-02-24T15:33:01Z</span></div>
+<div class="commit-line">Relative Author Date: <span class="relative-date">5 days ago</span></div>
+<div class="commit-line">Subject: <span class="subject-value">Update README.md</span></div>
+        
+      </div>
+<div class="commit-block" role="listitem" tabindex="0">
+        <div class="commit-number">Commit #35</div>
+        <div class="commit-line"></div>
+
+<div class="commit-line">
+    <span class="label">Commit:</span>
+    <span class="commit-link-wrapper">
+                    <a href="https://github.com/wilderyns/steam_market_analyser/commit/18dec71e1e9f6386f30abb43d3c9818e9a45078c" class="commit-link" target="_blank" rel="noopener noreferrer">18dec71</a>
+                    <span class="commit-link-tooltip">
+                      View commit <span class="hash">18dec71</span> on remote repository
+                    </span>
+                </span>
+                <button class="copy-link" data-link="https://github.com/wilderyns/steam_market_analyser/commit/18dec71e1e9f6386f30abb43d3c9818e9a45078c" data-full-hash="18dec71e1e9f6386f30abb43d3c9818e9a45078c" aria-label="Copy commit link to clipboard" title="">
+                  🔗
+                  <span class="custom-tooltip">Copy <span class="hash">18dec71</span> commit link</span>
+                </button>
+</div>
+<div class="commit-status-line" aria-label="Commit status">
+    <span class="commit-status local" title="Exists in Your Local Branch">
+        <span class="icon"><i class="fa-solid fa-check"></i></span> <span class="text">Exists in Your Local Branch</span>
+    </span>
+    <span class="commit-status remote pushed" title="Pushed to Remote Repo">
+        <span class="icon"><i class="fa-solid fa-check"></i></span> <span class="text">Pushed to Remote Repo</span>
+    </span>
+</div>
+<div class="commit-line">ISO Author Date: <span class="iso-date">2026-02-24T15:32:58Z</span></div>
+<div class="commit-line">Relative Author Date: <span class="relative-date">5 days ago</span></div>
+<div class="commit-line">Subject: <span class="subject-value">Update writeup.md</span></div>
+        
+      </div>
+<div class="commit-block" role="listitem" tabindex="0">
+        <div class="commit-number">Commit #34</div>
+        <div class="commit-line"></div>
+
+<div class="commit-line">
+    <span class="label">Commit:</span>
+    <span class="commit-link-wrapper">
+                    <a href="https://github.com/wilderyns/steam_market_analyser/commit/402536a57c431410adfdb7617e1af1ed91ce9e38" class="commit-link" target="_blank" rel="noopener noreferrer">402536a</a>
+                    <span class="commit-link-tooltip">
+                      View commit <span class="hash">402536a</span> on remote repository
+                    </span>
+                </span>
+                <button class="copy-link" data-link="https://github.com/wilderyns/steam_market_analyser/commit/402536a57c431410adfdb7617e1af1ed91ce9e38" data-full-hash="402536a57c431410adfdb7617e1af1ed91ce9e38" aria-label="Copy commit link to clipboard" title="">
+                  🔗
+                  <span class="custom-tooltip">Copy <span class="hash">402536a</span> commit link</span>
+                </button>
+</div>
+<div class="commit-status-line" aria-label="Commit status">
+    <span class="commit-status local" title="Exists in Your Local Branch">
+        <span class="icon"><i class="fa-solid fa-check"></i></span> <span class="text">Exists in Your Local Branch</span>
+    </span>
+    <span class="commit-status remote pushed" title="Pushed to Remote Repo">
+        <span class="icon"><i class="fa-solid fa-check"></i></span> <span class="text">Pushed to Remote Repo</span>
+    </span>
+</div>
+<div class="commit-line">ISO Author Date: <span class="iso-date">2026-02-24T13:52:49Z</span></div>
+<div class="commit-line">Relative Author Date: <span class="relative-date">5 days ago</span></div>
+<div class="commit-line">Subject: <span class="subject-value">Added columns list to transforms menu</span></div>
+        
+      </div>
+<div class="commit-block" role="listitem" tabindex="0">
+        <div class="commit-number">Commit #33</div>
+        <div class="commit-line"></div>
+
+<div class="commit-line">
+    <span class="label">Commit:</span>
+    <span class="commit-link-wrapper">
+                    <a href="https://github.com/wilderyns/steam_market_analyser/commit/e636fc71f9d66dfa9e13675df3b12536601a5a59" class="commit-link" target="_blank" rel="noopener noreferrer">e636fc7</a>
+                    <span class="commit-link-tooltip">
+                      View commit <span class="hash">e636fc7</span> on remote repository
+                    </span>
+                </span>
+                <button class="copy-link" data-link="https://github.com/wilderyns/steam_market_analyser/commit/e636fc71f9d66dfa9e13675df3b12536601a5a59" data-full-hash="e636fc71f9d66dfa9e13675df3b12536601a5a59" aria-label="Copy commit link to clipboard" title="">
+                  🔗
+                  <span class="custom-tooltip">Copy <span class="hash">e636fc7</span> commit link</span>
+                </button>
+</div>
+<div class="commit-status-line" aria-label="Commit status">
+    <span class="commit-status local" title="Exists in Your Local Branch">
+        <span class="icon"><i class="fa-solid fa-check"></i></span> <span class="text">Exists in Your Local Branch</span>
+    </span>
+    <span class="commit-status remote pushed" title="Pushed to Remote Repo">
+        <span class="icon"><i class="fa-solid fa-check"></i></span> <span class="text">Pushed to Remote Repo</span>
+    </span>
+</div>
+<div class="commit-line">ISO Author Date: <span class="iso-date">2026-02-23T12:49:03Z</span></div>
+<div class="commit-line">Relative Author Date: <span class="relative-date">6 days ago</span></div>
+<div class="commit-line">Subject: <span class="subject-value">Fixed typo</span></div>
+        <div class="commit-body-wrapper">
+                    <div class="commit-body-label">📝 Body</div>
+                    <pre class="commit-body">Let&#39;s not escape our new line</pre>
+                </div>
+      </div>
+<div class="commit-block" role="listitem" tabindex="0">
+        <div class="commit-number">Commit #32</div>
+        <div class="commit-line"></div>
+
+<div class="commit-line">
+    <span class="label">Commit:</span>
+    <span class="commit-link-wrapper">
+                    <a href="https://github.com/wilderyns/steam_market_analyser/commit/1c4a43a81cf0b6c52458e2de5af5edfbc4486650" class="commit-link" target="_blank" rel="noopener noreferrer">1c4a43a</a>
+                    <span class="commit-link-tooltip">
+                      View commit <span class="hash">1c4a43a</span> on remote repository
+                    </span>
+                </span>
+                <button class="copy-link" data-link="https://github.com/wilderyns/steam_market_analyser/commit/1c4a43a81cf0b6c52458e2de5af5edfbc4486650" data-full-hash="1c4a43a81cf0b6c52458e2de5af5edfbc4486650" aria-label="Copy commit link to clipboard" title="">
+                  🔗
+                  <span class="custom-tooltip">Copy <span class="hash">1c4a43a</span> commit link</span>
+                </button>
+</div>
+<div class="commit-status-line" aria-label="Commit status">
+    <span class="commit-status local" title="Exists in Your Local Branch">
+        <span class="icon"><i class="fa-solid fa-check"></i></span> <span class="text">Exists in Your Local Branch</span>
+    </span>
+    <span class="commit-status remote pushed" title="Pushed to Remote Repo">
+        <span class="icon"><i class="fa-solid fa-check"></i></span> <span class="text">Pushed to Remote Repo</span>
+    </span>
+</div>
+<div class="commit-line">ISO Author Date: <span class="iso-date">2026-02-23T10:12:43Z</span></div>
+<div class="commit-line">Relative Author Date: <span class="relative-date">6 days ago</span></div>
+<div class="commit-line">Subject: <span class="subject-value">Transform menu additions</span></div>
+        <div class="commit-body-wrapper">
+                    <div class="commit-body-label">📝 Body</div>
+                    <pre class="commit-body">Transformations and analysis option now in menu</pre>
+                </div>
+      </div>
+<div class="commit-block" role="listitem" tabindex="0">
+        <div class="commit-number">Commit #31</div>
+        <div class="commit-line"></div>
+
+<div class="commit-line">
+    <span class="label">Commit:</span>
+    <span class="commit-link-wrapper">
+                    <a href="https://github.com/wilderyns/steam_market_analyser/commit/9a46c0013544868c596843b66fca521e365a443f" class="commit-link" target="_blank" rel="noopener noreferrer">9a46c00</a>
+                    <span class="commit-link-tooltip">
+                      View commit <span class="hash">9a46c00</span> on remote repository
+                    </span>
+                </span>
+                <button class="copy-link" data-link="https://github.com/wilderyns/steam_market_analyser/commit/9a46c0013544868c596843b66fca521e365a443f" data-full-hash="9a46c0013544868c596843b66fca521e365a443f" aria-label="Copy commit link to clipboard" title="">
+                  🔗
+                  <span class="custom-tooltip">Copy <span class="hash">9a46c00</span> commit link</span>
+                </button>
+</div>
+<div class="commit-status-line" aria-label="Commit status">
+    <span class="commit-status local" title="Exists in Your Local Branch">
+        <span class="icon"><i class="fa-solid fa-check"></i></span> <span class="text">Exists in Your Local Branch</span>
+    </span>
+    <span class="commit-status remote pushed" title="Pushed to Remote Repo">
+        <span class="icon"><i class="fa-solid fa-check"></i></span> <span class="text">Pushed to Remote Repo</span>
+    </span>
+</div>
+<div class="commit-line">ISO Author Date: <span class="iso-date">2026-02-23T09:46:10Z</span></div>
+<div class="commit-line">Relative Author Date: <span class="relative-date">6 days ago</span></div>
+<div class="commit-line">Subject: <span class="subject-value">Implemented transform AND analysis</span></div>
+        <div class="commit-body-wrapper">
+                    <div class="commit-body-label">📝 Body</div>
+                    <pre class="commit-body">Transformation controller now handles all input, including analysis
+features. Decision made not to split both.
+Shift towards users being responsible for picking their own order of
+operations to allow for complex analysis of the dataset, rather than
+handpicked Steam Games Dataset specific transform and analysis
+Filters panel now shows if transformations have been applied
+Current transformation dataset now stored in state</pre>
+                </div>
+      </div>
+<div class="commit-block" role="listitem" tabindex="0">
+        <div class="commit-number">Commit #30</div>
+        <div class="commit-line"></div>
+
+<div class="commit-line">
+    <span class="label">Commit:</span>
+    <span class="commit-link-wrapper">
+                    <a href="https://github.com/wilderyns/steam_market_analyser/commit/740863698c8a48b45d10d865cd30b8f449efed57" class="commit-link" target="_blank" rel="noopener noreferrer">7408636</a>
+                    <span class="commit-link-tooltip">
+                      View commit <span class="hash">7408636</span> on remote repository
+                    </span>
+                </span>
+                <button class="copy-link" data-link="https://github.com/wilderyns/steam_market_analyser/commit/740863698c8a48b45d10d865cd30b8f449efed57" data-full-hash="740863698c8a48b45d10d865cd30b8f449efed57" aria-label="Copy commit link to clipboard" title="">
+                  🔗
+                  <span class="custom-tooltip">Copy <span class="hash">7408636</span> commit link</span>
+                </button>
+</div>
+<div class="commit-status-line" aria-label="Commit status">
+    <span class="commit-status local" title="Exists in Your Local Branch">
+        <span class="icon"><i class="fa-solid fa-check"></i></span> <span class="text">Exists in Your Local Branch</span>
+    </span>
+    <span class="commit-status remote pushed" title="Pushed to Remote Repo">
+        <span class="icon"><i class="fa-solid fa-check"></i></span> <span class="text">Pushed to Remote Repo</span>
+    </span>
+</div>
+<div class="commit-line">ISO Author Date: <span class="iso-date">2026-02-21T21:32:52Z</span></div>
+<div class="commit-line">Relative Author Date: <span class="relative-date">8 days ago</span></div>
+<div class="commit-line">Subject: <span class="subject-value">Implemented additional functions for data manipulation</span></div>
+        <div class="commit-body-wrapper">
+                    <div class="commit-body-label">📝 Body</div>
+                    <pre class="commit-body">Added functions to create new columns and chekc if columns exist</pre>
+                </div>
+      </div>
+<div class="commit-block" role="listitem" tabindex="0">
+        <div class="commit-number">Commit #29</div>
+        <div class="commit-line"></div>
+
+<div class="commit-line">
+    <span class="label">Commit:</span>
+    <span class="commit-link-wrapper">
+                    <a href="https://github.com/wilderyns/steam_market_analyser/commit/9d434328a1f6ac1adbece892dd5c5ae6e561c957" class="commit-link" target="_blank" rel="noopener noreferrer">9d43432</a>
+                    <span class="commit-link-tooltip">
+                      View commit <span class="hash">9d43432</span> on remote repository
+                    </span>
+                </span>
+                <button class="copy-link" data-link="https://github.com/wilderyns/steam_market_analyser/commit/9d434328a1f6ac1adbece892dd5c5ae6e561c957" data-full-hash="9d434328a1f6ac1adbece892dd5c5ae6e561c957" aria-label="Copy commit link to clipboard" title="">
+                  🔗
+                  <span class="custom-tooltip">Copy <span class="hash">9d43432</span> commit link</span>
+                </button>
+</div>
+<div class="commit-status-line" aria-label="Commit status">
+    <span class="commit-status local" title="Exists in Your Local Branch">
+        <span class="icon"><i class="fa-solid fa-check"></i></span> <span class="text">Exists in Your Local Branch</span>
+    </span>
+    <span class="commit-status remote pushed" title="Pushed to Remote Repo">
+        <span class="icon"><i class="fa-solid fa-check"></i></span> <span class="text">Pushed to Remote Repo</span>
+    </span>
+</div>
+<div class="commit-line">ISO Author Date: <span class="iso-date">2026-02-21T18:05:13Z</span></div>
+<div class="commit-line">Relative Author Date: <span class="relative-date">8 days ago</span></div>
+<div class="commit-line">Subject: <span class="subject-value">New functions to support transforms</span></div>
+        <div class="commit-body-wrapper">
+                    <div class="commit-body-label">📝 Body</div>
+                    <pre class="commit-body">Added placeholder functions to count items, sum 2 columns, log
+transform, minmax scale, and zscore
+Started transform menu view</pre>
+                </div>
+      </div>
+<div class="commit-block" role="listitem" tabindex="0">
+        <div class="commit-number">Commit #28</div>
+        <div class="commit-line"></div>
+
+<div class="commit-line">
+    <span class="label">Commit:</span>
+    <span class="commit-link-wrapper">
+                    <a href="https://github.com/wilderyns/steam_market_analyser/commit/aa41f6fb53108e3bca59dd95596fd4060c408233" class="commit-link" target="_blank" rel="noopener noreferrer">aa41f6f</a>
+                    <span class="commit-link-tooltip">
+                      View commit <span class="hash">aa41f6f</span> on remote repository
+                    </span>
+                </span>
+                <button class="copy-link" data-link="https://github.com/wilderyns/steam_market_analyser/commit/aa41f6fb53108e3bca59dd95596fd4060c408233" data-full-hash="aa41f6fb53108e3bca59dd95596fd4060c408233" aria-label="Copy commit link to clipboard" title="">
+                  🔗
+                  <span class="custom-tooltip">Copy <span class="hash">aa41f6f</span> commit link</span>
+                </button>
+</div>
+<div class="commit-status-line" aria-label="Commit status">
+    <span class="commit-status local" title="Exists in Your Local Branch">
+        <span class="icon"><i class="fa-solid fa-check"></i></span> <span class="text">Exists in Your Local Branch</span>
+    </span>
+    <span class="commit-status remote pushed" title="Pushed to Remote Repo">
+        <span class="icon"><i class="fa-solid fa-check"></i></span> <span class="text">Pushed to Remote Repo</span>
+    </span>
+</div>
+<div class="commit-line">ISO Author Date: <span class="iso-date">2026-02-20T12:37:41Z</span></div>
+<div class="commit-line">Relative Author Date: <span class="relative-date">9 days ago</span></div>
+<div class="commit-line">Subject: <span class="subject-value">Finalised Moving Search Out of Controller</span></div>
+        
+      </div>
+<div class="commit-block" role="listitem" tabindex="0">
+        <div class="commit-number">Commit #27</div>
+        <div class="commit-line"></div>
+
+<div class="commit-line">
+    <span class="label">Commit:</span>
+    <span class="commit-link-wrapper">
+                    <a href="https://github.com/wilderyns/steam_market_analyser/commit/f3eae26bbf79c4d14f24dce0c80135171eeb51fe" class="commit-link" target="_blank" rel="noopener noreferrer">f3eae26</a>
+                    <span class="commit-link-tooltip">
+                      View commit <span class="hash">f3eae26</span> on remote repository
+                    </span>
+                </span>
+                <button class="copy-link" data-link="https://github.com/wilderyns/steam_market_analyser/commit/f3eae26bbf79c4d14f24dce0c80135171eeb51fe" data-full-hash="f3eae26bbf79c4d14f24dce0c80135171eeb51fe" aria-label="Copy commit link to clipboard" title="">
+                  🔗
+                  <span class="custom-tooltip">Copy <span class="hash">f3eae26</span> commit link</span>
+                </button>
+</div>
+<div class="commit-status-line" aria-label="Commit status">
+    <span class="commit-status local" title="Exists in Your Local Branch">
+        <span class="icon"><i class="fa-solid fa-check"></i></span> <span class="text">Exists in Your Local Branch</span>
+    </span>
+    <span class="commit-status remote pushed" title="Pushed to Remote Repo">
+        <span class="icon"><i class="fa-solid fa-check"></i></span> <span class="text">Pushed to Remote Repo</span>
+    </span>
+</div>
+<div class="commit-line">ISO Author Date: <span class="iso-date">2026-02-18T02:15:31Z</span></div>
+<div class="commit-line">Relative Author Date: <span class="relative-date">12 days ago</span></div>
+<div class="commit-line">Subject: <span class="subject-value">Search function and column values</span></div>
+        <div class="commit-body-wrapper">
+                    <div class="commit-body-label">📝 Body</div>
+                    <pre class="commit-body">Began moving search function out of controller and implementing method to get all rows from a given column/s</pre>
+                </div>
+      </div>
+<div class="commit-block" role="listitem" tabindex="0">
+        <div class="commit-number">Commit #26</div>
+        <div class="commit-line"></div>
+
+<div class="commit-line">
+    <span class="label">Commit:</span>
+    <span class="commit-link-wrapper">
+                    <a href="https://github.com/wilderyns/steam_market_analyser/commit/2ac20f6200b7e392f65bdc0d08b8f2f070873bec" class="commit-link" target="_blank" rel="noopener noreferrer">2ac20f6</a>
+                    <span class="commit-link-tooltip">
+                      View commit <span class="hash">2ac20f6</span> on remote repository
+                    </span>
+                </span>
+                <button class="copy-link" data-link="https://github.com/wilderyns/steam_market_analyser/commit/2ac20f6200b7e392f65bdc0d08b8f2f070873bec" data-full-hash="2ac20f6200b7e392f65bdc0d08b8f2f070873bec" aria-label="Copy commit link to clipboard" title="">
+                  🔗
+                  <span class="custom-tooltip">Copy <span class="hash">2ac20f6</span> commit link</span>
+                </button>
+</div>
+<div class="commit-status-line" aria-label="Commit status">
+    <span class="commit-status local" title="Exists in Your Local Branch">
+        <span class="icon"><i class="fa-solid fa-check"></i></span> <span class="text">Exists in Your Local Branch</span>
+    </span>
+    <span class="commit-status remote pushed" title="Pushed to Remote Repo">
+        <span class="icon"><i class="fa-solid fa-check"></i></span> <span class="text">Pushed to Remote Repo</span>
+    </span>
+</div>
+<div class="commit-line">ISO Author Date: <span class="iso-date">2026-02-15T16:23:01Z</span></div>
+<div class="commit-line">Relative Author Date: <span class="relative-date">2 weeks ago</span></div>
+<div class="commit-line">Subject: <span class="subject-value">Comments</span></div>
+        
+      </div>
+<div class="commit-block" role="listitem" tabindex="0">
+        <div class="commit-number">Commit #25</div>
+        <div class="commit-line"></div>
+
+<div class="commit-line">
+    <span class="label">Commit:</span>
+    <span class="commit-link-wrapper">
+                    <a href="https://github.com/wilderyns/steam_market_analyser/commit/c04570466269a8dc84f44014d2a263b272d75a59" class="commit-link" target="_blank" rel="noopener noreferrer">c045704</a>
+                    <span class="commit-link-tooltip">
+                      View commit <span class="hash">c045704</span> on remote repository
+                    </span>
+                </span>
+                <button class="copy-link" data-link="https://github.com/wilderyns/steam_market_analyser/commit/c04570466269a8dc84f44014d2a263b272d75a59" data-full-hash="c04570466269a8dc84f44014d2a263b272d75a59" aria-label="Copy commit link to clipboard" title="">
+                  🔗
+                  <span class="custom-tooltip">Copy <span class="hash">c045704</span> commit link</span>
+                </button>
+</div>
+<div class="commit-status-line" aria-label="Commit status">
+    <span class="commit-status local" title="Exists in Your Local Branch">
+        <span class="icon"><i class="fa-solid fa-check"></i></span> <span class="text">Exists in Your Local Branch</span>
+    </span>
+    <span class="commit-status remote pushed" title="Pushed to Remote Repo">
+        <span class="icon"><i class="fa-solid fa-check"></i></span> <span class="text">Pushed to Remote Repo</span>
+    </span>
+</div>
+<div class="commit-line">ISO Author Date: <span class="iso-date">2026-02-15T15:21:20Z</span></div>
+<div class="commit-line">Relative Author Date: <span class="relative-date">2 weeks ago</span></div>
+<div class="commit-line">Subject: <span class="subject-value">Create PLACE_STEAM_MARKET_DATA_CSV_HERE</span></div>
+        
+      </div>
+<div class="commit-block" role="listitem" tabindex="0">
+        <div class="commit-number">Commit #24</div>
+        <div class="commit-line"></div>
+
+<div class="commit-line">
+    <span class="label">Commit:</span>
+    <span class="commit-link-wrapper">
+                    <a href="https://github.com/wilderyns/steam_market_analyser/commit/a64cc74f52e84784ca4b54c51c517b2a1eaedb2c" class="commit-link" target="_blank" rel="noopener noreferrer">a64cc74</a>
+                    <span class="commit-link-tooltip">
+                      View commit <span class="hash">a64cc74</span> on remote repository
+                    </span>
+                </span>
+                <button class="copy-link" data-link="https://github.com/wilderyns/steam_market_analyser/commit/a64cc74f52e84784ca4b54c51c517b2a1eaedb2c" data-full-hash="a64cc74f52e84784ca4b54c51c517b2a1eaedb2c" aria-label="Copy commit link to clipboard" title="">
+                  🔗
+                  <span class="custom-tooltip">Copy <span class="hash">a64cc74</span> commit link</span>
+                </button>
+</div>
+<div class="commit-status-line" aria-label="Commit status">
+    <span class="commit-status local" title="Exists in Your Local Branch">
+        <span class="icon"><i class="fa-solid fa-check"></i></span> <span class="text">Exists in Your Local Branch</span>
+    </span>
+    <span class="commit-status remote pushed" title="Pushed to Remote Repo">
+        <span class="icon"><i class="fa-solid fa-check"></i></span> <span class="text">Pushed to Remote Repo</span>
+    </span>
+</div>
+<div class="commit-line">ISO Author Date: <span class="iso-date">2026-02-15T15:09:40Z</span></div>
+<div class="commit-line">Relative Author Date: <span class="relative-date">2 weeks ago</span></div>
+<div class="commit-line">Subject: <span class="subject-value">Dataset CSV to big for github so removed</span></div>
+        
+      </div>
+<div class="commit-block" role="listitem" tabindex="0">
+        <div class="commit-number">Commit #23</div>
+        <div class="commit-line"></div>
+
+<div class="commit-line">
+    <span class="label">Commit:</span>
+    <span class="commit-link-wrapper">
+                    <a href="https://github.com/wilderyns/steam_market_analyser/commit/74e12bab38e87d100c8c11a1abdbdea7c657523b" class="commit-link" target="_blank" rel="noopener noreferrer">74e12ba</a>
+                    <span class="commit-link-tooltip">
+                      View commit <span class="hash">74e12ba</span> on remote repository
+                    </span>
+                </span>
+                <button class="copy-link" data-link="https://github.com/wilderyns/steam_market_analyser/commit/74e12bab38e87d100c8c11a1abdbdea7c657523b" data-full-hash="74e12bab38e87d100c8c11a1abdbdea7c657523b" aria-label="Copy commit link to clipboard" title="">
+                  🔗
+                  <span class="custom-tooltip">Copy <span class="hash">74e12ba</span> commit link</span>
+                </button>
+</div>
+<div class="commit-status-line" aria-label="Commit status">
+    <span class="commit-status local" title="Exists in Your Local Branch">
+        <span class="icon"><i class="fa-solid fa-check"></i></span> <span class="text">Exists in Your Local Branch</span>
+    </span>
+    <span class="commit-status remote pushed" title="Pushed to Remote Repo">
+        <span class="icon"><i class="fa-solid fa-check"></i></span> <span class="text">Pushed to Remote Repo</span>
+    </span>
+</div>
+<div class="commit-line">ISO Author Date: <span class="iso-date">2026-02-15T15:03:10Z</span></div>
+<div class="commit-line">Relative Author Date: <span class="relative-date">2 weeks ago</span></div>
+<div class="commit-line">Subject: <span class="subject-value">Update README.md</span></div>
+        
+      </div>
+<div class="commit-block" role="listitem" tabindex="0">
+        <div class="commit-number">Commit #22</div>
+        <div class="commit-line"></div>
+
+<div class="commit-line">
+    <span class="label">Commit:</span>
+    <span class="commit-link-wrapper">
+                    <a href="https://github.com/wilderyns/steam_market_analyser/commit/7d5778331232cbf9ffa8e8087440520ad96869c4" class="commit-link" target="_blank" rel="noopener noreferrer">7d57783</a>
+                    <span class="commit-link-tooltip">
+                      View commit <span class="hash">7d57783</span> on remote repository
+                    </span>
+                </span>
+                <button class="copy-link" data-link="https://github.com/wilderyns/steam_market_analyser/commit/7d5778331232cbf9ffa8e8087440520ad96869c4" data-full-hash="7d5778331232cbf9ffa8e8087440520ad96869c4" aria-label="Copy commit link to clipboard" title="">
+                  🔗
+                  <span class="custom-tooltip">Copy <span class="hash">7d57783</span> commit link</span>
+                </button>
+</div>
+<div class="commit-status-line" aria-label="Commit status">
+    <span class="commit-status local" title="Exists in Your Local Branch">
+        <span class="icon"><i class="fa-solid fa-check"></i></span> <span class="text">Exists in Your Local Branch</span>
+    </span>
+    <span class="commit-status remote pushed" title="Pushed to Remote Repo">
+        <span class="icon"><i class="fa-solid fa-check"></i></span> <span class="text">Pushed to Remote Repo</span>
+    </span>
+</div>
+<div class="commit-line">ISO Author Date: <span class="iso-date">2026-02-15T15:03:06Z</span></div>
+<div class="commit-line">Relative Author Date: <span class="relative-date">2 weeks ago</span></div>
+<div class="commit-line">Subject: <span class="subject-value">Added placeholder main menu options</span></div>
+        
+      </div>
+<div class="commit-block" role="listitem" tabindex="0">
+        <div class="commit-number">Commit #21</div>
+        <div class="commit-line"></div>
+
+<div class="commit-line">
+    <span class="label">Commit:</span>
+    <span class="commit-link-wrapper">
+                    <a href="https://github.com/wilderyns/steam_market_analyser/commit/96370dab1c8c269e0dd19f023b70defd1caf4842" class="commit-link" target="_blank" rel="noopener noreferrer">96370da</a>
+                    <span class="commit-link-tooltip">
+                      View commit <span class="hash">96370da</span> on remote repository
+                    </span>
+                </span>
+                <button class="copy-link" data-link="https://github.com/wilderyns/steam_market_analyser/commit/96370dab1c8c269e0dd19f023b70defd1caf4842" data-full-hash="96370dab1c8c269e0dd19f023b70defd1caf4842" aria-label="Copy commit link to clipboard" title="">
+                  🔗
+                  <span class="custom-tooltip">Copy <span class="hash">96370da</span> commit link</span>
+                </button>
+</div>
+<div class="commit-status-line" aria-label="Commit status">
+    <span class="commit-status local" title="Exists in Your Local Branch">
+        <span class="icon"><i class="fa-solid fa-check"></i></span> <span class="text">Exists in Your Local Branch</span>
+    </span>
+    <span class="commit-status remote pushed" title="Pushed to Remote Repo">
+        <span class="icon"><i class="fa-solid fa-check"></i></span> <span class="text">Pushed to Remote Repo</span>
+    </span>
+</div>
+<div class="commit-line">ISO Author Date: <span class="iso-date">2026-02-15T15:02:58Z</span></div>
+<div class="commit-line">Relative Author Date: <span class="relative-date">2 weeks ago</span></div>
+<div class="commit-line">Subject: <span class="subject-value">Added Dataset docstring</span></div>
+        
+      </div>
+<div class="commit-block" role="listitem" tabindex="0">
+        <div class="commit-number">Commit #20</div>
+        <div class="commit-line"></div>
+
+<div class="commit-line">
+    <span class="label">Commit:</span>
+    <span class="commit-link-wrapper">
+                    <a href="https://github.com/wilderyns/steam_market_analyser/commit/b25ded9b37a4c7c2d71688877317a5e980017ff8" class="commit-link" target="_blank" rel="noopener noreferrer">b25ded9</a>
+                    <span class="commit-link-tooltip">
+                      View commit <span class="hash">b25ded9</span> on remote repository
+                    </span>
+                </span>
+                <button class="copy-link" data-link="https://github.com/wilderyns/steam_market_analyser/commit/b25ded9b37a4c7c2d71688877317a5e980017ff8" data-full-hash="b25ded9b37a4c7c2d71688877317a5e980017ff8" aria-label="Copy commit link to clipboard" title="">
+                  🔗
+                  <span class="custom-tooltip">Copy <span class="hash">b25ded9</span> commit link</span>
+                </button>
+</div>
+<div class="commit-status-line" aria-label="Commit status">
+    <span class="commit-status local" title="Exists in Your Local Branch">
+        <span class="icon"><i class="fa-solid fa-check"></i></span> <span class="text">Exists in Your Local Branch</span>
+    </span>
+    <span class="commit-status remote pushed" title="Pushed to Remote Repo">
+        <span class="icon"><i class="fa-solid fa-check"></i></span> <span class="text">Pushed to Remote Repo</span>
+    </span>
+</div>
+<div class="commit-line">ISO Author Date: <span class="iso-date">2026-02-15T14:53:19Z</span></div>
+<div class="commit-line">Relative Author Date: <span class="relative-date">2 weeks ago</span></div>
+<div class="commit-line">Subject: <span class="subject-value">Removed old console.input from main menu</span></div>
+        <div class="commit-body-wrapper">
+                    <div class="commit-body-label">📝 Body</div>
+                    <pre class="commit-body">Now uses expect_user_input</pre>
+                </div>
+      </div>
+<div class="commit-block" role="listitem" tabindex="0">
+        <div class="commit-number">Commit #19</div>
+        <div class="commit-line"></div>
+
+<div class="commit-line">
+    <span class="label">Commit:</span>
+    <span class="commit-link-wrapper">
+                    <a href="https://github.com/wilderyns/steam_market_analyser/commit/6e6adb3f5da5e51f645846a501a2b51a6129f309" class="commit-link" target="_blank" rel="noopener noreferrer">6e6adb3</a>
+                    <span class="commit-link-tooltip">
+                      View commit <span class="hash">6e6adb3</span> on remote repository
+                    </span>
+                </span>
+                <button class="copy-link" data-link="https://github.com/wilderyns/steam_market_analyser/commit/6e6adb3f5da5e51f645846a501a2b51a6129f309" data-full-hash="6e6adb3f5da5e51f645846a501a2b51a6129f309" aria-label="Copy commit link to clipboard" title="">
+                  🔗
+                  <span class="custom-tooltip">Copy <span class="hash">6e6adb3</span> commit link</span>
+                </button>
+</div>
+<div class="commit-status-line" aria-label="Commit status">
+    <span class="commit-status local" title="Exists in Your Local Branch">
+        <span class="icon"><i class="fa-solid fa-check"></i></span> <span class="text">Exists in Your Local Branch</span>
+    </span>
+    <span class="commit-status remote pushed" title="Pushed to Remote Repo">
+        <span class="icon"><i class="fa-solid fa-check"></i></span> <span class="text">Pushed to Remote Repo</span>
+    </span>
+</div>
+<div class="commit-line">ISO Author Date: <span class="iso-date">2026-02-15T14:51:40Z</span></div>
+<div class="commit-line">Relative Author Date: <span class="relative-date">2 weeks ago</span></div>
+<div class="commit-line">Subject: <span class="subject-value">Docstrings</span></div>
+        <div class="commit-body-wrapper">
+                    <div class="commit-body-label">📝 Body</div>
+                    <pre class="commit-body">Added docstrings to multiple functions to make function identification
+easier whilst developing</pre>
+                </div>
+      </div>
+<div class="commit-block" role="listitem" tabindex="0">
+        <div class="commit-number">Commit #18</div>
+        <div class="commit-line"></div>
+
+<div class="commit-line">
+    <span class="label">Commit:</span>
+    <span class="commit-link-wrapper">
+                    <a href="https://github.com/wilderyns/steam_market_analyser/commit/a5c014448b1da99100614a91fa6b5e50ea55eb76" class="commit-link" target="_blank" rel="noopener noreferrer">a5c0144</a>
+                    <span class="commit-link-tooltip">
+                      View commit <span class="hash">a5c0144</span> on remote repository
+                    </span>
+                </span>
+                <button class="copy-link" data-link="https://github.com/wilderyns/steam_market_analyser/commit/a5c014448b1da99100614a91fa6b5e50ea55eb76" data-full-hash="a5c014448b1da99100614a91fa6b5e50ea55eb76" aria-label="Copy commit link to clipboard" title="">
+                  🔗
+                  <span class="custom-tooltip">Copy <span class="hash">a5c0144</span> commit link</span>
+                </button>
+</div>
+<div class="commit-status-line" aria-label="Commit status">
+    <span class="commit-status local" title="Exists in Your Local Branch">
+        <span class="icon"><i class="fa-solid fa-check"></i></span> <span class="text">Exists in Your Local Branch</span>
+    </span>
+    <span class="commit-status remote pushed" title="Pushed to Remote Repo">
+        <span class="icon"><i class="fa-solid fa-check"></i></span> <span class="text">Pushed to Remote Repo</span>
+    </span>
+</div>
+<div class="commit-line">ISO Author Date: <span class="iso-date">2026-02-15T09:10:53Z</span></div>
+<div class="commit-line">Relative Author Date: <span class="relative-date">2 weeks ago</span></div>
+<div class="commit-line">Subject: <span class="subject-value">Added price unit in viewer</span></div>
+        <div class="commit-body-wrapper">
+                    <div class="commit-body-label">📝 Body</div>
+                    <pre class="commit-body">Turns out it&#39;s USD $</pre>
+                </div>
+      </div>
+<div class="commit-block" role="listitem" tabindex="0">
+        <div class="commit-number">Commit #17</div>
+        <div class="commit-line"></div>
+
+<div class="commit-line">
+    <span class="label">Commit:</span>
+    <span class="commit-link-wrapper">
+                    <a href="https://github.com/wilderyns/steam_market_analyser/commit/c9ed13d6b7285d4ceb8e0a0169a147725c6bfe52" class="commit-link" target="_blank" rel="noopener noreferrer">c9ed13d</a>
+                    <span class="commit-link-tooltip">
+                      View commit <span class="hash">c9ed13d</span> on remote repository
+                    </span>
+                </span>
+                <button class="copy-link" data-link="https://github.com/wilderyns/steam_market_analyser/commit/c9ed13d6b7285d4ceb8e0a0169a147725c6bfe52" data-full-hash="c9ed13d6b7285d4ceb8e0a0169a147725c6bfe52" aria-label="Copy commit link to clipboard" title="">
+                  🔗
+                  <span class="custom-tooltip">Copy <span class="hash">c9ed13d</span> commit link</span>
+                </button>
+</div>
+<div class="commit-status-line" aria-label="Commit status">
+    <span class="commit-status local" title="Exists in Your Local Branch">
+        <span class="icon"><i class="fa-solid fa-check"></i></span> <span class="text">Exists in Your Local Branch</span>
+    </span>
+    <span class="commit-status remote pushed" title="Pushed to Remote Repo">
+        <span class="icon"><i class="fa-solid fa-check"></i></span> <span class="text">Pushed to Remote Repo</span>
+    </span>
+</div>
+<div class="commit-line">ISO Author Date: <span class="iso-date">2026-02-15T09:04:35Z</span></div>
+<div class="commit-line">Relative Author Date: <span class="relative-date">2 weeks ago</span></div>
+<div class="commit-line">Subject: <span class="subject-value">Fully implemeted show_adult_content</span></div>
+        <div class="commit-body-wrapper">
+                    <div class="commit-body-label">📝 Body</div>
+                    <pre class="commit-body">Renamed to make variable clearer, added filtering</pre>
+                </div>
+      </div>
+<div class="commit-block" role="listitem" tabindex="0">
+        <div class="commit-number">Commit #16</div>
+        <div class="commit-line"></div>
+
+<div class="commit-line">
+    <span class="label">Commit:</span>
+    <span class="commit-link-wrapper">
+                    <a href="https://github.com/wilderyns/steam_market_analyser/commit/ec44a68e83b640fd2e8700e1252c8bf8628b45fc" class="commit-link" target="_blank" rel="noopener noreferrer">ec44a68</a>
+                    <span class="commit-link-tooltip">
+                      View commit <span class="hash">ec44a68</span> on remote repository
+                    </span>
+                </span>
+                <button class="copy-link" data-link="https://github.com/wilderyns/steam_market_analyser/commit/ec44a68e83b640fd2e8700e1252c8bf8628b45fc" data-full-hash="ec44a68e83b640fd2e8700e1252c8bf8628b45fc" aria-label="Copy commit link to clipboard" title="">
+                  🔗
+                  <span class="custom-tooltip">Copy <span class="hash">ec44a68</span> commit link</span>
+                </button>
+</div>
+<div class="commit-status-line" aria-label="Commit status">
+    <span class="commit-status local" title="Exists in Your Local Branch">
+        <span class="icon"><i class="fa-solid fa-check"></i></span> <span class="text">Exists in Your Local Branch</span>
+    </span>
+    <span class="commit-status remote pushed" title="Pushed to Remote Repo">
+        <span class="icon"><i class="fa-solid fa-check"></i></span> <span class="text">Pushed to Remote Repo</span>
+    </span>
+</div>
+<div class="commit-line">ISO Author Date: <span class="iso-date">2026-02-15T07:46:30Z</span></div>
+<div class="commit-line">Relative Author Date: <span class="relative-date">2 weeks ago</span></div>
+<div class="commit-line">Subject: <span class="subject-value">No longer adjusting column names</span></div>
+        <div class="commit-body-wrapper">
+                    <div class="commit-body-label">📝 Body</div>
+                    <pre class="commit-body">Previous plan to normalize column names not happening, keeping current
+case</pre>
+                </div>
+      </div>
+<div class="commit-block" role="listitem" tabindex="0">
+        <div class="commit-number">Commit #15</div>
+        <div class="commit-line"></div>
+
+<div class="commit-line">
+    <span class="label">Commit:</span>
+    <span class="commit-link-wrapper">
+                    <a href="https://github.com/wilderyns/steam_market_analyser/commit/8eab3002323b27b476fed18f6353f252ee971858" class="commit-link" target="_blank" rel="noopener noreferrer">8eab300</a>
+                    <span class="commit-link-tooltip">
+                      View commit <span class="hash">8eab300</span> on remote repository
+                    </span>
+                </span>
+                <button class="copy-link" data-link="https://github.com/wilderyns/steam_market_analyser/commit/8eab3002323b27b476fed18f6353f252ee971858" data-full-hash="8eab3002323b27b476fed18f6353f252ee971858" aria-label="Copy commit link to clipboard" title="">
+                  🔗
+                  <span class="custom-tooltip">Copy <span class="hash">8eab300</span> commit link</span>
+                </button>
+</div>
+<div class="commit-status-line" aria-label="Commit status">
+    <span class="commit-status local" title="Exists in Your Local Branch">
+        <span class="icon"><i class="fa-solid fa-check"></i></span> <span class="text">Exists in Your Local Branch</span>
+    </span>
+    <span class="commit-status remote pushed" title="Pushed to Remote Repo">
+        <span class="icon"><i class="fa-solid fa-check"></i></span> <span class="text">Pushed to Remote Repo</span>
+    </span>
+</div>
+<div class="commit-line">ISO Author Date: <span class="iso-date">2026-02-14T22:12:23Z</span></div>
+<div class="commit-line">Relative Author Date: <span class="relative-date">2 weeks ago</span></div>
+<div class="commit-line">Subject: <span class="subject-value">Fixed error display</span></div>
+        <div class="commit-body-wrapper">
+                    <div class="commit-body-label">📝 Body</div>
+                    <pre class="commit-body">Now only one error will display when an incorrect value is entered,
+screen now fully refreshes</pre>
+                </div>
+      </div>
+<div class="commit-block" role="listitem" tabindex="0">
+        <div class="commit-number">Commit #14</div>
+        <div class="commit-line"></div>
+
+<div class="commit-line">
+    <span class="label">Commit:</span>
+    <span class="commit-link-wrapper">
+                    <a href="https://github.com/wilderyns/steam_market_analyser/commit/4425b5da1010d54edb04aa6f9b14561aa4293536" class="commit-link" target="_blank" rel="noopener noreferrer">4425b5d</a>
+                    <span class="commit-link-tooltip">
+                      View commit <span class="hash">4425b5d</span> on remote repository
+                    </span>
+                </span>
+                <button class="copy-link" data-link="https://github.com/wilderyns/steam_market_analyser/commit/4425b5da1010d54edb04aa6f9b14561aa4293536" data-full-hash="4425b5da1010d54edb04aa6f9b14561aa4293536" aria-label="Copy commit link to clipboard" title="">
+                  🔗
+                  <span class="custom-tooltip">Copy <span class="hash">4425b5d</span> commit link</span>
+                </button>
+</div>
+<div class="commit-status-line" aria-label="Commit status">
+    <span class="commit-status local" title="Exists in Your Local Branch">
+        <span class="icon"><i class="fa-solid fa-check"></i></span> <span class="text">Exists in Your Local Branch</span>
+    </span>
+    <span class="commit-status remote pushed" title="Pushed to Remote Repo">
+        <span class="icon"><i class="fa-solid fa-check"></i></span> <span class="text">Pushed to Remote Repo</span>
+    </span>
+</div>
+<div class="commit-line">ISO Author Date: <span class="iso-date">2026-02-14T21:59:53Z</span></div>
+<div class="commit-line">Relative Author Date: <span class="relative-date">2 weeks ago</span></div>
+<div class="commit-line">Subject: <span class="subject-value">Added adult game filter</span></div>
+        <div class="commit-body-wrapper">
+                    <div class="commit-body-label">📝 Body</div>
+                    <pre class="commit-body">Added filter to exclude adult game tags because this is a university
+project</pre>
+                </div>
+      </div>
+<div class="commit-block" role="listitem" tabindex="0">
+        <div class="commit-number">Commit #13</div>
+        <div class="commit-line"></div>
+
+<div class="commit-line">
+    <span class="label">Commit:</span>
+    <span class="commit-link-wrapper">
+                    <a href="https://github.com/wilderyns/steam_market_analyser/commit/187f3bcde06324e7fbd5872fad5f049721903a94" class="commit-link" target="_blank" rel="noopener noreferrer">187f3bc</a>
+                    <span class="commit-link-tooltip">
+                      View commit <span class="hash">187f3bc</span> on remote repository
+                    </span>
+                </span>
+                <button class="copy-link" data-link="https://github.com/wilderyns/steam_market_analyser/commit/187f3bcde06324e7fbd5872fad5f049721903a94" data-full-hash="187f3bcde06324e7fbd5872fad5f049721903a94" aria-label="Copy commit link to clipboard" title="">
+                  🔗
+                  <span class="custom-tooltip">Copy <span class="hash">187f3bc</span> commit link</span>
+                </button>
+</div>
+<div class="commit-status-line" aria-label="Commit status">
+    <span class="commit-status local" title="Exists in Your Local Branch">
+        <span class="icon"><i class="fa-solid fa-check"></i></span> <span class="text">Exists in Your Local Branch</span>
+    </span>
+    <span class="commit-status remote pushed" title="Pushed to Remote Repo">
+        <span class="icon"><i class="fa-solid fa-check"></i></span> <span class="text">Pushed to Remote Repo</span>
+    </span>
+</div>
+<div class="commit-line">ISO Author Date: <span class="iso-date">2026-02-14T21:25:56Z</span></div>
+<div class="commit-line">Relative Author Date: <span class="relative-date">2 weeks ago</span></div>
+<div class="commit-line">Subject: <span class="subject-value">Escaped and trimmed about the game column</span></div>
+        <div class="commit-body-wrapper">
+                    <div class="commit-body-label">📝 Body</div>
+                    <pre class="commit-body">Prevents crashes because Rich doesn&#39;t like it when its formatting is
+escaped: About me text would include [] and \ which would escape
+[bold]Rich example formatting[/bold]</pre>
+                </div>
+      </div>
+<div class="commit-block" role="listitem" tabindex="0">
+        <div class="commit-number">Commit #12</div>
+        <div class="commit-line"></div>
+
+<div class="commit-line">
+    <span class="label">Commit:</span>
+    <span class="commit-link-wrapper">
+                    <a href="https://github.com/wilderyns/steam_market_analyser/commit/e1cccff90573cc7fa09ec52c90744273a94f2521" class="commit-link" target="_blank" rel="noopener noreferrer">e1cccff</a>
+                    <span class="commit-link-tooltip">
+                      View commit <span class="hash">e1cccff</span> on remote repository
+                    </span>
+                </span>
+                <button class="copy-link" data-link="https://github.com/wilderyns/steam_market_analyser/commit/e1cccff90573cc7fa09ec52c90744273a94f2521" data-full-hash="e1cccff90573cc7fa09ec52c90744273a94f2521" aria-label="Copy commit link to clipboard" title="">
+                  🔗
+                  <span class="custom-tooltip">Copy <span class="hash">e1cccff</span> commit link</span>
+                </button>
+</div>
+<div class="commit-status-line" aria-label="Commit status">
+    <span class="commit-status local" title="Exists in Your Local Branch">
+        <span class="icon"><i class="fa-solid fa-check"></i></span> <span class="text">Exists in Your Local Branch</span>
+    </span>
+    <span class="commit-status remote pushed" title="Pushed to Remote Repo">
+        <span class="icon"><i class="fa-solid fa-check"></i></span> <span class="text">Pushed to Remote Repo</span>
+    </span>
+</div>
+<div class="commit-line">ISO Author Date: <span class="iso-date">2026-02-14T21:11:28Z</span></div>
+<div class="commit-line">Relative Author Date: <span class="relative-date">2 weeks ago</span></div>
+<div class="commit-line">Subject: <span class="subject-value">Added column selector</span></div>
+        <div class="commit-body-wrapper">
+                    <div class="commit-body-label">📝 Body</div>
+                    <pre class="commit-body">Added column selector menu</pre>
+                </div>
+      </div>
+<div class="commit-block" role="listitem" tabindex="0">
+        <div class="commit-number">Commit #11</div>
+        <div class="commit-line"></div>
+
+<div class="commit-line">
+    <span class="label">Commit:</span>
+    <span class="commit-link-wrapper">
+                    <a href="https://github.com/wilderyns/steam_market_analyser/commit/8eb85a07a18cd34d2e98a3f0aa0def7b8f1f4f88" class="commit-link" target="_blank" rel="noopener noreferrer">8eb85a0</a>
+                    <span class="commit-link-tooltip">
+                      View commit <span class="hash">8eb85a0</span> on remote repository
+                    </span>
+                </span>
+                <button class="copy-link" data-link="https://github.com/wilderyns/steam_market_analyser/commit/8eb85a07a18cd34d2e98a3f0aa0def7b8f1f4f88" data-full-hash="8eb85a07a18cd34d2e98a3f0aa0def7b8f1f4f88" aria-label="Copy commit link to clipboard" title="">
+                  🔗
+                  <span class="custom-tooltip">Copy <span class="hash">8eb85a0</span> commit link</span>
+                </button>
+</div>
+<div class="commit-status-line" aria-label="Commit status">
+    <span class="commit-status local" title="Exists in Your Local Branch">
+        <span class="icon"><i class="fa-solid fa-check"></i></span> <span class="text">Exists in Your Local Branch</span>
+    </span>
+    <span class="commit-status remote pushed" title="Pushed to Remote Repo">
+        <span class="icon"><i class="fa-solid fa-check"></i></span> <span class="text">Pushed to Remote Repo</span>
+    </span>
+</div>
+<div class="commit-line">ISO Author Date: <span class="iso-date">2026-02-14T18:20:32Z</span></div>
+<div class="commit-line">Relative Author Date: <span class="relative-date">2 weeks ago</span></div>
+<div class="commit-line">Subject: <span class="subject-value">Begin handling selected columns properly</span></div>
+        <div class="commit-body-wrapper">
+                    <div class="commit-body-label">📝 Body</div>
+                    <pre class="commit-body">Enabling user to select what columns they want to see.
+AppState supports new columns object which stores available columns and
+selected columns to display
+Dataset service populates available cplumns and sets default columns on
+load
+Dataset viewer respects column selection</pre>
+                </div>
+      </div>
+<div class="commit-block" role="listitem" tabindex="0">
+        <div class="commit-number">Commit #10</div>
+        <div class="commit-line"></div>
+
+<div class="commit-line">
+    <span class="label">Commit:</span>
+    <span class="commit-link-wrapper">
+                    <a href="https://github.com/wilderyns/steam_market_analyser/commit/88428989b111d9d67e5a7f067fa8dfb6e3240151" class="commit-link" target="_blank" rel="noopener noreferrer">8842898</a>
+                    <span class="commit-link-tooltip">
+                      View commit <span class="hash">8842898</span> on remote repository
+                    </span>
+                </span>
+                <button class="copy-link" data-link="https://github.com/wilderyns/steam_market_analyser/commit/88428989b111d9d67e5a7f067fa8dfb6e3240151" data-full-hash="88428989b111d9d67e5a7f067fa8dfb6e3240151" aria-label="Copy commit link to clipboard" title="">
+                  🔗
+                  <span class="custom-tooltip">Copy <span class="hash">8842898</span> commit link</span>
+                </button>
+</div>
+<div class="commit-status-line" aria-label="Commit status">
+    <span class="commit-status local" title="Exists in Your Local Branch">
+        <span class="icon"><i class="fa-solid fa-check"></i></span> <span class="text">Exists in Your Local Branch</span>
+    </span>
+    <span class="commit-status remote pushed" title="Pushed to Remote Repo">
+        <span class="icon"><i class="fa-solid fa-check"></i></span> <span class="text">Pushed to Remote Repo</span>
+    </span>
+</div>
+<div class="commit-line">ISO Author Date: <span class="iso-date">2026-02-14T13:38:11Z</span></div>
+<div class="commit-line">Relative Author Date: <span class="relative-date">2 weeks ago</span></div>
+<div class="commit-line">Subject: <span class="subject-value">Terminal size now shows it&#39;s ok</span></div>
+        <div class="commit-body-wrapper">
+                    <div class="commit-body-label">📝 Body</div>
+                    <pre class="commit-body">Terminal size was within suggested bounds it would still show as not being correctly sized. It now works as expected</pre>
+                </div>
+      </div>
+<div class="commit-block" role="listitem" tabindex="0">
+        <div class="commit-number">Commit #9</div>
+        <div class="commit-line"></div>
+
+<div class="commit-line">
+    <span class="label">Commit:</span>
+    <span class="commit-link-wrapper">
+                    <a href="https://github.com/wilderyns/steam_market_analyser/commit/e968c790f66a022f1b06fc0ed6a357cb8f0e7006" class="commit-link" target="_blank" rel="noopener noreferrer">e968c79</a>
+                    <span class="commit-link-tooltip">
+                      View commit <span class="hash">e968c79</span> on remote repository
+                    </span>
+                </span>
+                <button class="copy-link" data-link="https://github.com/wilderyns/steam_market_analyser/commit/e968c790f66a022f1b06fc0ed6a357cb8f0e7006" data-full-hash="e968c790f66a022f1b06fc0ed6a357cb8f0e7006" aria-label="Copy commit link to clipboard" title="">
+                  🔗
+                  <span class="custom-tooltip">Copy <span class="hash">e968c79</span> commit link</span>
+                </button>
+</div>
+<div class="commit-status-line" aria-label="Commit status">
+    <span class="commit-status local" title="Exists in Your Local Branch">
+        <span class="icon"><i class="fa-solid fa-check"></i></span> <span class="text">Exists in Your Local Branch</span>
+    </span>
+    <span class="commit-status remote pushed" title="Pushed to Remote Repo">
+        <span class="icon"><i class="fa-solid fa-check"></i></span> <span class="text">Pushed to Remote Repo</span>
+    </span>
+</div>
+<div class="commit-line">ISO Author Date: <span class="iso-date">2026-02-14T10:15:25Z</span></div>
+<div class="commit-line">Relative Author Date: <span class="relative-date">2 weeks ago</span></div>
+<div class="commit-line">Subject: <span class="subject-value">Update dataset_service.py</span></div>
+        <div class="commit-body-wrapper">
+                    <div class="commit-body-label">📝 Body</div>
+                    <pre class="commit-body">Removed redundant import cast</pre>
+                </div>
+      </div>
+<div class="commit-block" role="listitem" tabindex="0">
+        <div class="commit-number">Commit #8</div>
+        <div class="commit-line"></div>
+
+<div class="commit-line">
+    <span class="label">Commit:</span>
+    <span class="commit-link-wrapper">
+                    <a href="https://github.com/wilderyns/steam_market_analyser/commit/6f956a2e2321de0442fbcb714c1edeb6f4b6c126" class="commit-link" target="_blank" rel="noopener noreferrer">6f956a2</a>
+                    <span class="commit-link-tooltip">
+                      View commit <span class="hash">6f956a2</span> on remote repository
+                    </span>
+                </span>
+                <button class="copy-link" data-link="https://github.com/wilderyns/steam_market_analyser/commit/6f956a2e2321de0442fbcb714c1edeb6f4b6c126" data-full-hash="6f956a2e2321de0442fbcb714c1edeb6f4b6c126" aria-label="Copy commit link to clipboard" title="">
+                  🔗
+                  <span class="custom-tooltip">Copy <span class="hash">6f956a2</span> commit link</span>
+                </button>
+</div>
+<div class="commit-status-line" aria-label="Commit status">
+    <span class="commit-status local" title="Exists in Your Local Branch">
+        <span class="icon"><i class="fa-solid fa-check"></i></span> <span class="text">Exists in Your Local Branch</span>
+    </span>
+    <span class="commit-status remote pushed" title="Pushed to Remote Repo">
+        <span class="icon"><i class="fa-solid fa-check"></i></span> <span class="text">Pushed to Remote Repo</span>
+    </span>
+</div>
+<div class="commit-line">ISO Author Date: <span class="iso-date">2026-02-14T10:12:05Z</span></div>
+<div class="commit-line">Relative Author Date: <span class="relative-date">2 weeks ago</span></div>
+<div class="commit-line">Subject: <span class="subject-value">Update dataset_service.py</span></div>
+        <div class="commit-body-wrapper">
+                    <div class="commit-body-label">📝 Body</div>
+                    <pre class="commit-body">Spelling</pre>
+                </div>
+      </div>
+<div class="commit-block" role="listitem" tabindex="0">
+        <div class="commit-number">Commit #7</div>
+        <div class="commit-line"></div>
+
+<div class="commit-line">
+    <span class="label">Commit:</span>
+    <span class="commit-link-wrapper">
+                    <a href="https://github.com/wilderyns/steam_market_analyser/commit/019a1a0e18f6881924c8c8422bb6e33fc66bc5e0" class="commit-link" target="_blank" rel="noopener noreferrer">019a1a0</a>
+                    <span class="commit-link-tooltip">
+                      View commit <span class="hash">019a1a0</span> on remote repository
+                    </span>
+                </span>
+                <button class="copy-link" data-link="https://github.com/wilderyns/steam_market_analyser/commit/019a1a0e18f6881924c8c8422bb6e33fc66bc5e0" data-full-hash="019a1a0e18f6881924c8c8422bb6e33fc66bc5e0" aria-label="Copy commit link to clipboard" title="">
+                  🔗
+                  <span class="custom-tooltip">Copy <span class="hash">019a1a0</span> commit link</span>
+                </button>
+</div>
+<div class="commit-status-line" aria-label="Commit status">
+    <span class="commit-status local" title="Exists in Your Local Branch">
+        <span class="icon"><i class="fa-solid fa-check"></i></span> <span class="text">Exists in Your Local Branch</span>
+    </span>
+    <span class="commit-status remote pushed" title="Pushed to Remote Repo">
+        <span class="icon"><i class="fa-solid fa-check"></i></span> <span class="text">Pushed to Remote Repo</span>
+    </span>
+</div>
+<div class="commit-line">ISO Author Date: <span class="iso-date">2026-02-14T09:34:32Z</span></div>
+<div class="commit-line">Relative Author Date: <span class="relative-date">2 weeks ago</span></div>
+<div class="commit-line">Subject: <span class="subject-value">Reimplemented dataset viewer</span></div>
+        <div class="commit-body-wrapper">
+                    <div class="commit-body-label">📝 Body</div>
+                    <pre class="commit-body">Now has a search and pagination - handled across MVC
+Recreated a terminal utils file to assist in clearing terminal - Rich
+supports console.clear but as fallback util can step in</pre>
+                </div>
+      </div>
+<div class="commit-block" role="listitem" tabindex="0">
+        <div class="commit-number">Commit #6</div>
+        <div class="commit-line"></div>
+
+<div class="commit-line">
+    <span class="label">Commit:</span>
+    <span class="commit-link-wrapper">
+                    <a href="https://github.com/wilderyns/steam_market_analyser/commit/011a23b71ded9d66cd0d6627da896aeb2031534b" class="commit-link" target="_blank" rel="noopener noreferrer">011a23b</a>
+                    <span class="commit-link-tooltip">
+                      View commit <span class="hash">011a23b</span> on remote repository
+                    </span>
+                </span>
+                <button class="copy-link" data-link="https://github.com/wilderyns/steam_market_analyser/commit/011a23b71ded9d66cd0d6627da896aeb2031534b" data-full-hash="011a23b71ded9d66cd0d6627da896aeb2031534b" aria-label="Copy commit link to clipboard" title="">
+                  🔗
+                  <span class="custom-tooltip">Copy <span class="hash">011a23b</span> commit link</span>
+                </button>
+</div>
+<div class="commit-status-line" aria-label="Commit status">
+    <span class="commit-status local" title="Exists in Your Local Branch">
+        <span class="icon"><i class="fa-solid fa-check"></i></span> <span class="text">Exists in Your Local Branch</span>
+    </span>
+    <span class="commit-status remote pushed" title="Pushed to Remote Repo">
+        <span class="icon"><i class="fa-solid fa-check"></i></span> <span class="text">Pushed to Remote Repo</span>
+    </span>
+</div>
+<div class="commit-line">ISO Author Date: <span class="iso-date">2026-02-10T20:45:43Z</span></div>
+<div class="commit-line">Relative Author Date: <span class="relative-date">3 weeks ago</span></div>
+<div class="commit-line">Subject: <span class="subject-value">Removed old pre-refactor files</span></div>
+        <div class="commit-body-wrapper">
+                    <div class="commit-body-label">📝 Body</div>
+                    <pre class="commit-body">Remenant files must be purged</pre>
+                </div>
+      </div>
+<div class="commit-block" role="listitem" tabindex="0">
+        <div class="commit-number">Commit #5</div>
+        <div class="commit-line"></div>
+
+<div class="commit-line">
+    <span class="label">Commit:</span>
+    <span class="commit-link-wrapper">
+                    <a href="https://github.com/wilderyns/steam_market_analyser/commit/cd565d374c2fbe30f1a9f145332c1ce9deac0add" class="commit-link" target="_blank" rel="noopener noreferrer">cd565d3</a>
+                    <span class="commit-link-tooltip">
+                      View commit <span class="hash">cd565d3</span> on remote repository
+                    </span>
+                </span>
+                <button class="copy-link" data-link="https://github.com/wilderyns/steam_market_analyser/commit/cd565d374c2fbe30f1a9f145332c1ce9deac0add" data-full-hash="cd565d374c2fbe30f1a9f145332c1ce9deac0add" aria-label="Copy commit link to clipboard" title="">
+                  🔗
+                  <span class="custom-tooltip">Copy <span class="hash">cd565d3</span> commit link</span>
+                </button>
+</div>
+<div class="commit-status-line" aria-label="Commit status">
+    <span class="commit-status local" title="Exists in Your Local Branch">
+        <span class="icon"><i class="fa-solid fa-check"></i></span> <span class="text">Exists in Your Local Branch</span>
+    </span>
+    <span class="commit-status remote pushed" title="Pushed to Remote Repo">
+        <span class="icon"><i class="fa-solid fa-check"></i></span> <span class="text">Pushed to Remote Repo</span>
+    </span>
+</div>
+<div class="commit-line">ISO Author Date: <span class="iso-date">2026-02-10T20:35:22Z</span></div>
+<div class="commit-line">Relative Author Date: <span class="relative-date">3 weeks ago</span></div>
+<div class="commit-line">Subject: <span class="subject-value">Fixed invalid input display on main menu</span></div>
+        <div class="commit-body-wrapper">
+                    <div class="commit-body-label">📝 Body</div>
+                    <pre class="commit-body">In response to user inpout errors being passed, fixed issue on main menu
+where the error wasn&#39;t displaying correctly</pre>
+                </div>
+      </div>
+<div class="commit-block" role="listitem" tabindex="0">
+        <div class="commit-number">Commit #4</div>
+        <div class="commit-line"></div>
+
+<div class="commit-line">
+    <span class="label">Commit:</span>
+    <span class="commit-link-wrapper">
+                    <a href="https://github.com/wilderyns/steam_market_analyser/commit/8947d2d63634c19c507e5df18e21fa7166197d2b" class="commit-link" target="_blank" rel="noopener noreferrer">8947d2d</a>
+                    <span class="commit-link-tooltip">
+                      View commit <span class="hash">8947d2d</span> on remote repository
+                    </span>
+                </span>
+                <button class="copy-link" data-link="https://github.com/wilderyns/steam_market_analyser/commit/8947d2d63634c19c507e5df18e21fa7166197d2b" data-full-hash="8947d2d63634c19c507e5df18e21fa7166197d2b" aria-label="Copy commit link to clipboard" title="">
+                  🔗
+                  <span class="custom-tooltip">Copy <span class="hash">8947d2d</span> commit link</span>
+                </button>
+</div>
+<div class="commit-status-line" aria-label="Commit status">
+    <span class="commit-status local" title="Exists in Your Local Branch">
+        <span class="icon"><i class="fa-solid fa-check"></i></span> <span class="text">Exists in Your Local Branch</span>
+    </span>
+    <span class="commit-status remote pushed" title="Pushed to Remote Repo">
+        <span class="icon"><i class="fa-solid fa-check"></i></span> <span class="text">Pushed to Remote Repo</span>
+    </span>
+</div>
+<div class="commit-line">ISO Author Date: <span class="iso-date">2026-02-10T19:22:38Z</span></div>
+<div class="commit-line">Relative Author Date: <span class="relative-date">3 weeks ago</span></div>
+<div class="commit-line">Subject: <span class="subject-value">Filtering logic implemented, refined user input</span></div>
+        <div class="commit-body-wrapper">
+                    <div class="commit-body-label">📝 Body</div>
+                    <pre class="commit-body">Models now alter their dataset when filters are applied
+User input error feedback passed to controllers</pre>
+                </div>
+      </div>
+<div class="commit-block" role="listitem" tabindex="0">
+        <div class="commit-number">Commit #3</div>
+        <div class="commit-line"></div>
+
+<div class="commit-line">
+    <span class="label">Commit:</span>
+    <span class="commit-link-wrapper">
+                    <a href="https://github.com/wilderyns/steam_market_analyser/commit/28f6cc6c003f0a4735d400cc1562afebd463b4ae" class="commit-link" target="_blank" rel="noopener noreferrer">28f6cc6</a>
+                    <span class="commit-link-tooltip">
+                      View commit <span class="hash">28f6cc6</span> on remote repository
+                    </span>
+                </span>
+                <button class="copy-link" data-link="https://github.com/wilderyns/steam_market_analyser/commit/28f6cc6c003f0a4735d400cc1562afebd463b4ae" data-full-hash="28f6cc6c003f0a4735d400cc1562afebd463b4ae" aria-label="Copy commit link to clipboard" title="">
+                  🔗
+                  <span class="custom-tooltip">Copy <span class="hash">28f6cc6</span> commit link</span>
+                </button>
+</div>
+<div class="commit-status-line" aria-label="Commit status">
+    <span class="commit-status local" title="Exists in Your Local Branch">
+        <span class="icon"><i class="fa-solid fa-check"></i></span> <span class="text">Exists in Your Local Branch</span>
+    </span>
+    <span class="commit-status remote pushed" title="Pushed to Remote Repo">
+        <span class="icon"><i class="fa-solid fa-check"></i></span> <span class="text">Pushed to Remote Repo</span>
+    </span>
+</div>
+<div class="commit-line">ISO Author Date: <span class="iso-date">2026-02-10T15:27:03Z</span></div>
+<div class="commit-line">Relative Author Date: <span class="relative-date">3 weeks ago</span></div>
+<div class="commit-line">Subject: <span class="subject-value">Continued refactoring</span></div>
+        <div class="commit-body-wrapper">
+                    <div class="commit-body-label">📝 Body</div>
+                    <pre class="commit-body">Dataset controller now handles display of dataset initial load and flow
+to download if csv does not exist
+Renamed startup_controller to feature_controller to reflect its new
+contaied focus
+Reordered user_input_handler args for preperation of no Rich support
+fallback
+Adjusted areas where user input is handled to reflect</pre>
+                </div>
+      </div>
+<div class="commit-block" role="listitem" tabindex="0">
+        <div class="commit-number">Commit #2</div>
+        <div class="commit-line"></div>
+
+<div class="commit-line">
+    <span class="label">Commit:</span>
+    <span class="commit-link-wrapper">
+                    <a href="https://github.com/wilderyns/steam_market_analyser/commit/a1ffa79c4bc400da1c3278853e7ec621c5c14bbe" class="commit-link" target="_blank" rel="noopener noreferrer">a1ffa79</a>
+                    <span class="commit-link-tooltip">
+                      View commit <span class="hash">a1ffa79</span> on remote repository
+                    </span>
+                </span>
+                <button class="copy-link" data-link="https://github.com/wilderyns/steam_market_analyser/commit/a1ffa79c4bc400da1c3278853e7ec621c5c14bbe" data-full-hash="a1ffa79c4bc400da1c3278853e7ec621c5c14bbe" aria-label="Copy commit link to clipboard" title="">
+                  🔗
+                  <span class="custom-tooltip">Copy <span class="hash">a1ffa79</span> commit link</span>
+                </button>
+</div>
+<div class="commit-status-line" aria-label="Commit status">
+    <span class="commit-status local" title="Exists in Your Local Branch">
+        <span class="icon"><i class="fa-solid fa-check"></i></span> <span class="text">Exists in Your Local Branch</span>
+    </span>
+    <span class="commit-status remote pushed" title="Pushed to Remote Repo">
+        <span class="icon"><i class="fa-solid fa-check"></i></span> <span class="text">Pushed to Remote Repo</span>
+    </span>
+</div>
+<div class="commit-line">ISO Author Date: <span class="iso-date">2026-02-05T10:17:57Z</span></div>
+<div class="commit-line">Relative Author Date: <span class="relative-date">3 weeks ago</span></div>
+<div class="commit-line">Subject: <span class="subject-value">Refactor into an MVC structure</span></div>
+        <div class="commit-body-wrapper">
+                    <div class="commit-body-label">📝 Body</div>
+                    <pre class="commit-body">Removed files from initial commit and redistributed code into
+appropriate files in model, view, controller, and utils directories.
+Dataset now stored in model, polymorphic Dataset class for split
+implementation of Pandas dataframe and verison with no external library
+use
+Implemented dataset filtering functionality</pre>
+                </div>
+      </div>
+<div class="commit-block" role="listitem" tabindex="0">
+        <div class="commit-number">Commit #1</div>
+        <div class="commit-line"></div>
+
+<div class="commit-line">
+    <span class="label">Commit:</span>
+    <span class="commit-link-wrapper">
+                    <a href="https://github.com/wilderyns/steam_market_analyser/commit/f04c949c44bacaf3470eb284769b7d2739a3b799" class="commit-link" target="_blank" rel="noopener noreferrer">f04c949</a>
+                    <span class="commit-link-tooltip">
+                      View commit <span class="hash">f04c949</span> on remote repository
+                    </span>
+                </span>
+                <button class="copy-link" data-link="https://github.com/wilderyns/steam_market_analyser/commit/f04c949c44bacaf3470eb284769b7d2739a3b799" data-full-hash="f04c949c44bacaf3470eb284769b7d2739a3b799" aria-label="Copy commit link to clipboard" title="">
+                  🔗
+                  <span class="custom-tooltip">Copy <span class="hash">f04c949</span> commit link</span>
+                </button>
+</div>
+<div class="commit-status-line" aria-label="Commit status">
+    <span class="commit-status local" title="Exists in Your Local Branch">
+        <span class="icon"><i class="fa-solid fa-check"></i></span> <span class="text">Exists in Your Local Branch</span>
+    </span>
+    <span class="commit-status remote pushed" title="Pushed to Remote Repo">
+        <span class="icon"><i class="fa-solid fa-check"></i></span> <span class="text">Pushed to Remote Repo</span>
+    </span>
+</div>
+<div class="commit-line">ISO Author Date: <span class="iso-date">2026-02-04T13:53:40Z</span></div>
+<div class="commit-line">Relative Author Date: <span class="relative-date">4 weeks ago</span></div>
+<div class="commit-line">Subject: <span class="subject-value">Initial commit</span></div>
+        <div class="commit-body-wrapper">
+                    <div class="commit-body-label">📝 Body</div>
+                    <pre class="commit-body">Dataset viewer implemented alongside feature checking</pre>
+                </div>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    (() => {
+      const toggleThemeBtn = document.getElementById("toggle-theme");
+      // Initialize aria-pressed based on current theme, assuming dark is default.
+      // Or you can check localStorage if you persist theme preference.
+      const isHtmlDark = document.documentElement.classList.contains("dark");
+      toggleThemeBtn.setAttribute("aria-pressed", isHtmlDark.toString());
+
+      toggleThemeBtn.addEventListener("click", () => {
+        document.documentElement.classList.toggle("dark");
+        const isDark = document.documentElement.classList.contains("dark");
+        toggleThemeBtn.setAttribute("aria-pressed", isDark.toString());
+      });
+
+      document.getElementById("export-pdf").addEventListener("click", () => {
+        window.print();
+      });
+
+      document.querySelectorAll(".copy-link").forEach(button => {
+        button.addEventListener("click", () => {
+          const link = button.dataset.link;
+          const fullHash = button.dataset.fullHash;
+          const tooltip = button.querySelector(".custom-tooltip");
+          const originalText = "Copy " + fullHash.slice(0, 7) + " commit link"; // Store original text
+
+          navigator.clipboard.writeText(link).then(() => {
+            tooltip.textContent = "Copied " + fullHash.slice(0, 7);
+            tooltip.classList.add("copied-active"); // Add the new class
+
+            // Temporarily remove pointer-events from the button itself
+            button.style.pointerEvents = "none"; // Prevent re-triggering hover immediately after click
+
+            setTimeout(() => {
+              tooltip.classList.remove("copied-active"); // Remove the class
+              tooltip.textContent = originalText; // Restore original text
+              button.style.pointerEvents = ""; // Restore pointer-events
+            }, 1500);
+          });
+        });
+      });
+    })();
+  </script>
+</body>
+</html>
