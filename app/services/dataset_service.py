@@ -121,12 +121,7 @@ def init_dataset(state: AppState):
         state.last_results = None
         return False
     
-def factory_create_dataset(
-    state: AppState,
-    rows: list[list],
-    columns: list[str],
-    backend: str | None = None,
-) -> Dataset:
+def factory_create_dataset(state: AppState, rows: list[list], columns: list[str], backend: str | None = None,) -> Dataset:
     """
     Create a dataset instance using the active backend or an explicit override.
     
@@ -140,6 +135,7 @@ def factory_create_dataset(
         Dataset: DatasetPandas or DatasetNoLib depending on selected backend
 
     """
+    
     copied_rows = [list(row) for row in rows]
 
     selected_backend = backend

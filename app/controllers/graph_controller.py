@@ -45,11 +45,11 @@ def graph_controller(state: AppState, console=None):
                     "Graph source (1=dataset, 2=last analysis): "
                 )
 
-            x_column = console.input("X column: ").strip()
-            y_column = console.input("Y column (numeric): ").strip()
+            x_column = expect_user_input(str, None, None, None, console, "X column: ")
+            y_column = expect_user_input(str, None, None, None, console, "Y column (numeric): ")
             start_row = expect_user_input(int, None, 0, None, console, "Start row (0 for first): ")
             end_row = expect_user_input(int, None, 0, None, console, "End row (0 for last): ")
-            filename = console.input("Output file name [.png optional]: ").strip()
+            filename = expect_user_input(str, None, None, None, console, "Output file name [.png optional]: ")
             if not filename:
                 filename = None
 

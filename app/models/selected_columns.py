@@ -2,6 +2,13 @@ from typing import Optional
 
 
 class SelectedColumns:
+    """
+    SelectedColumns holds the columns selected for display as well as the available columns
+
+    Attributes:
+    available_columns: all the column headers in the loaded csv, called by dataset service on load
+    selected: the selected columns to be viewed
+    """
     available_columns: list[str] = None
     # selected can be optional because if none are we'll show them all
     selected: Optional[list[str]] = None
